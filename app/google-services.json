@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "258694556926",
+    "project_id": "proyecto-echofind",
+    "storage_bucket": "proyecto-echofind.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:258694556926:android:9ad212baa4743acc7e49af",
+        "android_client_info": {
+          "package_name": "com.example.echofind"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "258694556926-u3ij99n3c8i34782ri8tq56ae5a2joq6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.echofind",
+            "certificate_hash": "0f47f92862cbd8eb2c0c122ecf45b95aff1f1dd5"
+          }
+        },
+        {
+          "client_id": "258694556926-npsk46gd4q3q2q0u3t9qri6l9jcbpmae.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARGOZpFJe91odpjT5kpvr4crCSin2zjrg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "258694556926-npsk46gd4q3q2q0u3t9qri6l9jcbpmae.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
