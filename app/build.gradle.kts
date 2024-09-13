@@ -77,6 +77,9 @@ dependencies {
     implementation("com.github.theapache64:twyper:0.0.4")
     implementation("androidx.compose.runtime:runtime-saveable:1.0.0")
     implementation("androidx.compose.ui:ui-graphics:1.0.0")
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore.ktx)
+    implementation(libs.androidx.runtime.livedata)
 
     //-- Testing
     testImplementation(libs.junit)

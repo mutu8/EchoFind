@@ -20,6 +20,10 @@ runtimeSaveable = "1.7.0"
 transportRuntime = "3.0.1"
 twyper = "0.0.4"
 uiGraphics = "1.0.0"
+googleGmsGoogleServices = "4.4.2"
+firebaseAuth = "23.0.0"
+firebaseFirestoreKtx = "25.1.0"
+runtimeLivedata = "1.7.1"
 
 [libraries]
 accompanist-pager = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanistPager" }
@@ -48,8 +52,12 @@ lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "
 transport-runtime = { module = "com.google.android.datatransport:transport-runtime", version.ref = "transportRuntime" }
 twyper = { module = "com.github.theapache64:twyper", version.ref = "twyper" }
 ui-graphics = { module = "androidx.compose.ui:ui-graphics", version.ref = "uiGraphics" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
+firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
+androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
 
