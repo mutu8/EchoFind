@@ -1,4 +1,4 @@
-package com.example.echofind
+package com.example.echofind.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

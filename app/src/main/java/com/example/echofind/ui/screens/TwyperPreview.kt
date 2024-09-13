@@ -1,4 +1,4 @@
-package com.example.echofind.ui.components.Home
+package com.example.echofind.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -22,7 +22,9 @@ import com.github.theapache64.twyper.rememberTwyperController
 @Composable
 fun TwyperPreview() {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black), // Fondo oscuro
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {

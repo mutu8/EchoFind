@@ -7,9 +7,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.echofind.data.model.dataStore.StoreBoarding
-import com.example.echofind.ui.components.Home.TwyperPreview
+import com.example.echofind.ui.screens.TwyperPreview
 import com.example.echofind.ui.components.OnBoarding.MainOnBoarding
 import com.example.echofind.ui.screens.LoginScreen
+import com.example.echofind.ui.screens.RegisterScreen
 import com.example.echofind.ui.screens.SplashScreen
 
 @Composable
@@ -31,6 +32,9 @@ fun NavManager(){
         }
         composable("TwyperPreview") {
             TwyperPreview()
+        }
+        composable("register") {
+            RegisterScreen(navController)
         }
     }
 }
