@@ -1,99 +1,138 @@
 package com.example.echofind.ui.components.Home
 
+import android.content.Context
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.echofind.ui.theme.Generator.randomColor
-import com.github.theapache64.twyper.flip.TwyperFlip
-import com.github.theapache64.twyper.flip.rememberTwyperFlipController
+import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
+import com.example.echofind.data.model.player.Track
+import com.example.echofind.di.SpotifyAuth
+import com.example.echofind.ui.theme.rememberRandomColor
+import com.example.echofind.utils.SpotifyService
+import com.github.theapache64.twyper.Twyper
+import com.github.theapache64.twyper.rememberTwyperController
+import com.google.android.exoplayer2.MediaItem
+import kotlinx.coroutines.launch
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 @Preview
 @Composable
-fun TwyperFlipPreview() {
+fun TwyperPreview() {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val exoPlayer = rememberExoPlayer(context)
+    var tracks by remember { mutableStateOf<List<Track>>(emptyList()) }
+    val twyperController = rememberTwyperController()
+
+    LaunchedEffect(Unit) {
+        scope.launch {
+            try {
+                val token = SpotifyAuth.getAccessToken(context)
+                val retrofit = Retrofit.Builder()
+                    .baseUrl("https://api.spotify.com/")
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build()
+                val service = retrofit.create(SpotifyService::class.java)
+                val response = service.getFavoriteTracks("Bearer $token")
+                if (response.isSuccessful) {
+                    tracks = response.body()?.items ?: emptyList()
+                    if (tracks.isNotEmpty()) {
+                        tracks[0].preview_url?.let { previewUrl ->
+                            exoPlayer.setMediaItem(MediaItem.fromUri(previewUrl))
+                            exoPlayer.prepare()
+                            exoPlayer.play()
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        val items = remember { mutableStateListOf(*('A'..'Z').toList().toTypedArray()) }
-        val twyperFlipController = rememberTwyperFlipController()
-
-        val generateBoxModifier: () -> Modifier = {
-            Modifier
-                .size(300.dp)
-                .background(
-                    brush = Brush.horizontalGradient(
-                        listOf(
-                            randomColor(),
-                            randomColor()
-                        )
-                    )
-                )
-        }
-
-        TwyperFlip(
-            items = items,
-            twyperFlipController = twyperFlipController,
-            onItemRemoved = { item, direction ->
-                println("Item removed: $item -> $direction")
-                items.remove(item)
+        Twyper(
+            items = tracks,
+            twyperController = twyperController,
+            onItemRemoved = { track, direction ->
+                val index = tracks.indexOf(track)
+                if (index != -1) {
+                    val nextIndex = (index + 1) % tracks.size
+                    tracks[nextIndex].preview_url?.let { previewUrl ->
+                        exoPlayer.setMediaItem(MediaItem.fromUri(previewUrl))
+                        exoPlayer.prepare()
+                        exoPlayer.play()
+                    }
+                }
             },
-            cardModifier = generateBoxModifier,
             onEmpty = {
                 println("End reached")
-            },
-            modifier = Modifier,
-            front = { item ->
-                FrontText(item = item)
-            },
-            back = { item ->
-                ReverseText(item = "${item.code - 65 + 1}")
-            })
+            }
+        ) { track ->
+            Box(
+                modifier = Modifier
+                    .size(300.dp)
+                    .background(
+                        brush = Brush.horizontalGradient(
+                            listOf(
+                                rememberRandomColor(),
+                                rememberRandomColor(),
+                            )
+                        )
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Column {
+                    Text(text = track.name, fontSize = 20.sp, color = Color.White)
+                    Text(text = track.artists.joinToString { it.name }, fontSize = 16.sp, color = Color.White)
+                    track.album.images.firstOrNull()?.url?.let { imageUrl ->
+                        Image(
+                            painter = rememberAsyncImagePainter(imageUrl),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                        )
+                    }
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.height(50.dp))
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(30.dp),
         ) {
-
             IconButton(onClick = {
-                twyperFlipController.swipeLeft()
+                twyperController.swipeLeft()
             }) {
                 Text(text = "❌", fontSize = 30.sp)
             }
 
             IconButton(onClick = {
-                twyperFlipController.flip()
-            }) {
-                Text(text = "🔀", fontSize = 30.sp)
-            }
-
-            IconButton(onClick = {
-                twyperFlipController.swipeRight()
+                twyperController.swipeRight()
             }) {
                 Text(text = "✅", fontSize = 30.sp)
             }
         }
     }
-}
-
-@Composable
-fun FrontText(modifier: Modifier = Modifier, item: Char){
-    Text(modifier = modifier, text = "$item", fontSize = 200.sp, color = Color.White)
-}
-
-@Composable
-fun ReverseText(modifier: Modifier = Modifier, item: String){
-    Text(modifier = modifier, text = item, fontSize = 200.sp, color = Color.White)
 }

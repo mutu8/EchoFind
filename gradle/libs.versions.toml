@@ -1,6 +1,6 @@
 [versions]
 accompanistPager = "0.24.13-rc"
-agp = "8.5.2"
+agp = "8.6.0"
 appcompat = "1.5.1"
 coreKtxVersion = "1.9.0"
 datastorePreferences = "1.0.0"
