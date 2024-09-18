@@ -13,7 +13,7 @@ import com.example.echofind.ui.screens.LoginScreen
 import com.example.echofind.ui.screens.RegisterScreen
 import com.example.echofind.ui.screens.SplashScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.echofind.data.test.LoginViewModel
+import com.example.echofind.data.viewmodel.AuthSpotifyViewModel
 import com.example.echofind.ui.screens.TwyperPreview
 
 @Composable
@@ -25,7 +25,7 @@ fun NavManager(){
     val navController = rememberNavController()
 
     // Obtener una instancia del LoginViewModel
-    val loginViewModel: LoginViewModel = viewModel()
+    val loginViewModel: AuthSpotifyViewModel = viewModel()
 
     NavHost(navController, startDestination = "Splash") {
         composable("OnBoarding") {

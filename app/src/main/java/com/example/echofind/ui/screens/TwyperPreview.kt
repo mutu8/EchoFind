@@ -25,12 +25,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberImagePainter
 import com.example.echofind.R
-import com.example.echofind.R.raw
-import com.github.theapache64.twyper.SwipedOutDirection
+import com.example.echofind.data.model.player.TrackItem
 import com.github.theapache64.twyper.Twyper
 import com.github.theapache64.twyper.rememberTwyperController
-import com.example.echofind.data.test.LoginViewModel
-import com.example.echofind.data.test.TrackItem
+import com.example.echofind.data.viewmodel.AuthSpotifyViewModel
 
 // Define la fuente personalizada utilizando el archivo de la fuente
 val customFontFamily = FontFamily(
@@ -39,8 +37,8 @@ val customFontFamily = FontFamily(
 
 @Composable
 fun TwyperPreview(
-    loginViewModel: LoginViewModel = viewModel(),
-    playlistId: String = "4NOh46g6qdTXPITpvBnB0M" // Playlist por defecto
+    loginViewModel: AuthSpotifyViewModel = viewModel(),
+    playlistId: String = "37i9dQZF1EpuB6RpxWiksl" // Playlist por defecto
 ) {
     var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
     var tracks by remember { mutableStateOf<List<TrackItem>?>(null) }
