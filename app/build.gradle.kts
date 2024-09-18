@@ -79,14 +79,28 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics:1.0.0")
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore.ktx)
+    implementation("com.google.firebase:firebase-storage-ktx:20.1.0")
     implementation(libs.androidx.runtime.livedata)
 
-    //Spotify api
-    implementation("com.google.android.exoplayer:exoplayer:2.15.1")
+    // Retrofit y Gson
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("com.squareup.okhttp3:okhttp:4.9.1")
-    implementation("io.coil-kt:coil-compose:2.1.0")
+
+    // OkHttp Logging
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.1")
+
+    // Coil (opcional, para cargar imágenes)
+    implementation("io.coil-kt:coil-compose:2.3.0")
+
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
+
+    // Lifecycle Compose
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+
+    // MediaPlayer
+    implementation("com.google.android.exoplayer:exoplayer:2.18.1")
 
     //-- Testing
     testImplementation(libs.junit)

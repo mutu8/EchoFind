@@ -10,7 +10,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.example.echofind.navigation.NavManager
 import com.example.echofind.ui.theme.EchoFindTheme
-import playSpotifyPreviews
 
 
 class MainActivity : ComponentActivity() {
@@ -30,3 +29,5 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
+
