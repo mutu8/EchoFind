@@ -102,6 +102,9 @@ dependencies {
     // MediaPlayer
     implementation("com.google.android.exoplayer:exoplayer:2.18.1")
 
+    //Font
+    implementation("androidx.compose.ui:ui-text:1.0.5")
+
     //-- Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

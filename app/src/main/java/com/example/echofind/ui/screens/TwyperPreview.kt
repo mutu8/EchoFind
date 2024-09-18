@@ -17,21 +17,30 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberImagePainter
+import com.example.echofind.R
+import com.example.echofind.R.raw
 import com.github.theapache64.twyper.SwipedOutDirection
 import com.github.theapache64.twyper.Twyper
 import com.github.theapache64.twyper.rememberTwyperController
 import com.example.echofind.data.test.LoginViewModel
 import com.example.echofind.data.test.TrackItem
 
+// Define la fuente personalizada utilizando el archivo de la fuente
+val customFontFamily = FontFamily(
+    Font(R.font.montserrat) // Cambia 'my_custom_font' al nombre del archivo que agregaste en res/font
+)
+
 @Composable
 fun TwyperPreview(
     loginViewModel: LoginViewModel = viewModel(),
-    playlistId: String = "37i9dQZF1DZ06evO1hTiHo" // Playlist por defecto
+    playlistId: String = "4NOh46g6qdTXPITpvBnB0M" // Playlist por defecto
 ) {
     var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
     var tracks by remember { mutableStateOf<List<TrackItem>?>(null) }
@@ -146,26 +155,28 @@ fun TwyperPreview(
                     // El texto está fuera de la tarjeta, alineado debajo de la imagen
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Mostrar el nombre de la canción
+                    // Mostrar el nombre de la canción con la fuente personalizada
                     Text(
                         text = track.name,
                         fontSize = 24.sp,
                         color = Color.Black, // Cambiado a blanco para mejor contraste con fondo oscuro
                         maxLines = 1, // Limitar a una línea
                         overflow = TextOverflow.Ellipsis, // Si es muy largo, agregar "..."
+                        fontFamily = customFontFamily, // Aplicamos la fuente personalizada
                         modifier = Modifier.widthIn(max = 280.dp) // Limitar el ancho máximo para evitar deformar la tarjeta
                     )
 
-                    // Mostrar los artistas
+                    // Mostrar los artistas con la fuente personalizada
                     Text(
                         text = track.artists.joinToString(", ") { it.name },
                         fontSize = 18.sp,
                         color = Color.DarkGray, // Color claro para mejor visibilidad
                         maxLines = 1, // Limitar a una línea
                         overflow = TextOverflow.Ellipsis, // Si es muy largo, agregar "..."
+                        fontFamily = customFontFamily, // Aplicamos la fuente personalizada
                         modifier = Modifier.widthIn(max = 280.dp) // Limitar el ancho máximo para evitar deformar la tarjeta
                     )
-                }
+                    Spacer(modifier = Modifier.height(5.dp))                }
             }
 
             Spacer(modifier = Modifier.height(50.dp))
@@ -217,7 +228,7 @@ fun TwyperPreview(
             }
         } else {
             // Mostrar un mensaje mientras se cargan las pistas
-            Text(text = "Cargando pistas...", fontSize = 18.sp, color = Color.White)
+            Text(text = "Cargando pistas...", fontSize = 18.sp, color = Color.White, fontFamily = customFontFamily)
         }
     }
 }
