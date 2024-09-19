@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "149927459658",
+    "project_id": "echofind-7c380",
+    "storage_bucket": "echofind-7c380.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:149927459658:android:49bbfaf7190e687bba9fb3",
+        "android_client_info": {
+          "package_name": "com.example.echofind"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC2i9wTBpN7oyq8_NuuphrcTl5Rlh8XmR4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
