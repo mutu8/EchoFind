@@ -25,12 +25,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberImagePainter
 import com.example.echofind.R
-import com.example.echofind.R.raw
-import com.github.theapache64.twyper.SwipedOutDirection
+import com.example.echofind.data.model.player.TrackItem
 import com.github.theapache64.twyper.Twyper
 import com.github.theapache64.twyper.rememberTwyperController
-import com.example.echofind.data.test.LoginViewModel
-import com.example.echofind.data.test.TrackItem
+import com.example.echofind.data.viewmodel.LoginSpotifyViewModel
 
 // Define la fuente personalizada utilizando el archivo de la fuente
 val customFontFamily = FontFamily(
@@ -39,8 +37,8 @@ val customFontFamily = FontFamily(
 
 @Composable
 fun TwyperPreview(
-    loginViewModel: LoginViewModel = viewModel(),
-    playlistId: String = "4NOh46g6qdTXPITpvBnB0M" // Playlist por defecto
+    loginSpotifyViewModel: LoginSpotifyViewModel = viewModel(),
+    playlistId: String = "37i9dQZF1EpuB6RpxWiksl" // Playlist por defecto
 ) {
     var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
     var tracks by remember { mutableStateOf<List<TrackItem>?>(null) }
@@ -54,7 +52,7 @@ fun TwyperPreview(
     fun playTrack(previewUrl: String?) {
         mediaPlayer?.release() // Libera el reproductor anterior si existe
         if (previewUrl != null) {
-            mediaPlayer = loginViewModel.playPreviewTrack(previewUrl) {
+            mediaPlayer = loginSpotifyViewModel.playPreviewTrack(previewUrl) {
                 // Acción al terminar la canción: ir a la siguiente canción y actualizar tarjeta
                 if (tracks != null && currentTrackIndex < tracks!!.size - 1) {
                     currentTrackIndex++
@@ -73,11 +71,11 @@ fun TwyperPreview(
 
     // Cargar las pistas al iniciar la pantalla y reproducir la primera pista automáticamente
     LaunchedEffect(Unit) {
-        if (loginViewModel.getToken().isEmpty()) {
-            loginViewModel.login("5da23dd12217412ab1a9088cb6c6280f", "dc01fd5a2eeb4257982cab398b35599e") { success ->
+        if (loginSpotifyViewModel.getToken().isEmpty()) {
+            loginSpotifyViewModel.login("5da23dd12217412ab1a9088cb6c6280f", "dc01fd5a2eeb4257982cab398b35599e") { success ->
                 if (success) {
-                    loginViewModel.getPlaylistTracks(loginViewModel.getToken(), playlistId) {
-                        tracks = loginViewModel.tracks
+                    loginSpotifyViewModel.getPlaylistTracks(loginSpotifyViewModel.getToken(), playlistId) {
+                        tracks = loginSpotifyViewModel.tracks
                         if (!tracks.isNullOrEmpty()) {
                             items.addAll(tracks!!) // Añadir todas las pistas a las tarjetas
                             playTrack(tracks!![0].preview_url)
@@ -88,8 +86,8 @@ fun TwyperPreview(
                 }
             }
         } else {
-            loginViewModel.getPlaylistTracks(loginViewModel.getToken(), playlistId) {
-                tracks = loginViewModel.tracks
+            loginSpotifyViewModel.getPlaylistTracks(loginSpotifyViewModel.getToken(), playlistId) {
+                tracks = loginSpotifyViewModel.tracks
                 if (!tracks.isNullOrEmpty()) {
                     items.addAll(tracks!!) // Añadir todas las pistas a las tarjetas
                     playTrack(tracks!![0].preview_url)
@@ -170,7 +168,7 @@ fun TwyperPreview(
                     Text(
                         text = track.artists.joinToString(", ") { it.name },
                         fontSize = 18.sp,
-                        color = Color.DarkGray, // Color claro para mejor visibilidad
+                        color = Color.Black, // Color claro para mejor visibilidad
                         maxLines = 1, // Limitar a una línea
                         overflow = TextOverflow.Ellipsis, // Si es muy largo, agregar "..."
                         fontFamily = customFontFamily, // Aplicamos la fuente personalizada
