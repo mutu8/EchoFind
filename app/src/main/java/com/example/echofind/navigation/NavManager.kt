@@ -13,7 +13,11 @@ import com.example.echofind.ui.screens.LoginScreen
 import com.example.echofind.ui.screens.RegisterScreen
 import com.example.echofind.ui.screens.SplashScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
+<<<<<<< HEAD
 import com.example.echofind.data.viewmodel.AuthSpotifyViewModel
+=======
+import com.example.echofind.data.viewmodel.LoginSpotifyViewModel
+>>>>>>> 349e561 (Update-estructura)
 import com.example.echofind.ui.screens.TwyperPreview
 
 @Composable
@@ -25,7 +29,11 @@ fun NavManager(){
     val navController = rememberNavController()
 
     // Obtener una instancia del LoginViewModel
+<<<<<<< HEAD
     val loginViewModel: AuthSpotifyViewModel = viewModel()
+=======
+    val loginSpotifyViewModel: LoginSpotifyViewModel = viewModel()
+>>>>>>> 349e561 (Update-estructura)
 
     NavHost(navController, startDestination = "Splash") {
         composable("OnBoarding") {
@@ -39,7 +47,11 @@ fun NavManager(){
         }
         // Reemplazamos TwyperPreview con la nueva TwyperScreen
         composable("TwyperPreview") {
+<<<<<<< HEAD
             TwyperPreview(loginViewModel = loginViewModel)
+=======
+            TwyperPreview(loginSpotifyViewModel = loginSpotifyViewModel)
+>>>>>>> 349e561 (Update-estructura)
         }
         composable("register") {
             RegisterScreen(navController)
