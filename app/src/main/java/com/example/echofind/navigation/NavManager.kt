@@ -15,10 +15,14 @@ import com.example.echofind.ui.screens.LoginScreen
 import com.example.echofind.ui.screens.RegisterScreen
 import com.example.echofind.ui.screens.SplashScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
+<<<<<<< HEAD
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.echofind.data.viewmodel.LoginSpotifyViewModel
 import com.example.echofind.ui.components.forScreens.BottomNavigationBar
 import com.example.echofind.data.navbar.NavigationItem
+=======
+import com.example.echofind.data.viewmodel.LoginSpotifyViewModel
+>>>>>>> ab73f7def6325127cf47abfe6b312b6b15194d19
 import com.example.echofind.ui.screens.TwyperPreview
 import androidx.compose.foundation.layout.systemBarsPadding
 import com.example.echofind.ui.screens.ProfileScreen
@@ -37,6 +41,7 @@ fun NavManager() {
     // Obtener una instancia del LoginViewModel
     val loginSpotifyViewModel: LoginSpotifyViewModel = viewModel()
 
+<<<<<<< HEAD
     // Verificar si la ruta actual es TwyperPreview para mostrar la barra de navegación
     val navBackStackEntry = navController.currentBackStackEntryAsState().value
     val currentRoute = navBackStackEntry?.destination?.route
@@ -83,6 +88,24 @@ fun NavManager() {
                     }
                 )
             }
+=======
+    NavHost(navController, startDestination = "Splash") {
+        composable("OnBoarding") {
+            MainOnBoarding(navController, dataStore)
+        }
+        composable("Login") {
+            LoginScreen(navController)
+        }
+        composable("Splash") {
+            SplashScreen(navController, store.value)
+        }
+        // Reemplazamos TwyperPreview con la nueva TwyperScreen
+        composable("TwyperPreview") {
+            TwyperPreview(loginSpotifyViewModel = loginSpotifyViewModel)
+        }
+        composable("register") {
+            RegisterScreen(navController)
+>>>>>>> ab73f7def6325127cf47abfe6b312b6b15194d19
         }
     }
 }
