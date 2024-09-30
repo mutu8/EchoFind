@@ -105,6 +105,10 @@ dependencies {
     //Font
     implementation("androidx.compose.ui:ui-text:1.0.5")
 
+    //Material3 icons
+    implementation("androidx.compose.material:material-icons-extended:1.5.4")
+    implementation("androidx.compose.material:material:1.0.0")
+
     //-- Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

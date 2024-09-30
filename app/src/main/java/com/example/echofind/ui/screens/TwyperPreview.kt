@@ -48,6 +48,13 @@ fun TwyperPreview(
     // Inicializamos con las pistas de la playlist
     val items = remember { mutableStateListOf<TrackItem>() }
 
+    DisposableEffect(Unit) {
+        onDispose {
+            mediaPlayer?.release() // Libera el MediaPlayer cuando el Composable es destruido
+            mediaPlayer = null
+        }
+    }
+
     // Función para reproducir la canción seleccionada
     fun playTrack(previewUrl: String?) {
         mediaPlayer?.release() // Libera el reproductor anterior si existe
