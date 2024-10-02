@@ -7,8 +7,9 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="colorPrimary">#FF6200EE</color> <!-- Cambia este por el color que desees -->
+    <color name="colorPrimary">#FF6200EE</color>
     <color name="colorPrimaryDark">#9e1c40</color>
     <color name="colorAccent">#D81B60</color>
-    <color name="dark_green">#006400</color> <!-- Añadir el color DarkGreen, si es necesario -->
+    <color name="dark_green">#006400</color>
+    <color name="spotify_green">#1DB954</color> <!-- Añadir el color spotifyGreen -->
 </resources>

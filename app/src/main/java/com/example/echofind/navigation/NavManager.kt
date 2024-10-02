@@ -21,6 +21,7 @@ import com.example.echofind.ui.components.forScreens.BottomNavigationBar
 import com.example.echofind.data.navbar.NavigationItem
 import com.example.echofind.ui.screens.TwyperPreview
 import androidx.compose.foundation.layout.systemBarsPadding
+import com.example.echofind.data.viewmodel.AuthViewModel
 import com.example.echofind.ui.screens.ProfileScreen
 import com.example.echofind.ui.screens.Song
 import com.example.echofind.ui.screens.SongListScreen
@@ -36,6 +37,7 @@ fun NavManager() {
 
     // Obtener una instancia del LoginViewModel
     val loginSpotifyViewModel: LoginSpotifyViewModel = viewModel()
+    val loginAppViewModel: AuthViewModel = viewModel()
 
     // Verificar si la ruta actual es TwyperPreview para mostrar la barra de navegación
     val navBackStackEntry = navController.currentBackStackEntryAsState().value
@@ -72,7 +74,7 @@ fun NavManager() {
             }
             // Nueva ruta para ProfileScreen
             composable("profileScreen") {
-                ProfileScreen(navController)
+                ProfileScreen(navController, loginAppViewModel)
             }
             // Nueva ruta para ProfileScreen
             composable("songListScreen") {

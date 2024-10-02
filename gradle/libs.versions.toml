@@ -15,6 +15,7 @@ lifecycleRuntimeKtx = "2.8.5"
 activityCompose = "1.9.2"
 composeBom = "2024.04.01"
 lottieCompose = "5.2.0"
+mssqlJdbc = "10.2.0.jre8"
 navigationCompose = "2.8.0"
 runtimeSaveable = "1.7.0"
 transportRuntime = "3.0.1"
@@ -50,6 +51,7 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "lottieCompose" }
+mssql-jdbc = { module = "com.microsoft.sqlserver:mssql-jdbc", version.ref = "mssqlJdbc" }
 transport-runtime = { module = "com.google.android.datatransport:transport-runtime", version.ref = "transportRuntime" }
 twyper = { module = "com.github.theapache64:twyper", version.ref = "twyper" }
 ui-graphics = { module = "androidx.compose.ui:ui-graphics", version.ref = "uiGraphics" }

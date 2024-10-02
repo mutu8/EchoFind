@@ -11,13 +11,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.echofind.data.model.player.TrackItem
 import com.example.echofind.data.service.AuthService
 import com.example.echofind.data.service.SpotifyService
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.nio.charset.StandardCharsets
-
-
-
 
 class LoginSpotifyViewModel : ViewModel() {
 
@@ -27,7 +26,6 @@ class LoginSpotifyViewModel : ViewModel() {
         .build()
 
     private val authService = retrofit.create(AuthService::class.java)
-
     private var accessToken: String = ""
 
     // Almacenamiento de las pistas en el ViewModel

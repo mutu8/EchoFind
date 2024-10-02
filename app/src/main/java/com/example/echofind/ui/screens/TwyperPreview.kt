@@ -6,12 +6,11 @@ import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,7 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
 import com.example.echofind.R
 import com.example.echofind.data.model.player.TrackItem
 import com.github.theapache64.twyper.Twyper
@@ -38,12 +37,15 @@ val customFontFamily = FontFamily(
 @Composable
 fun TwyperPreview(
     loginSpotifyViewModel: LoginSpotifyViewModel = viewModel(),
-    playlistId: String = "37i9dQZF1EpuB6RpxWiksl" // Playlist por defecto
+    playlistId: String = "3XOOP3blM46c8iGAFK0ypd" // Playlist por defecto
 ) {
     var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
     var tracks by remember { mutableStateOf<List<TrackItem>?>(null) }
-    var currentTrackIndex by remember { mutableStateOf(0) }
+    var currentTrackIndex by remember { mutableIntStateOf(0) }
     val twyperController = rememberTwyperController()
+
+    // Definir el color verde oscuro
+    val spotifyGreen = Color(0xFF1DB954)
 
     // Inicializamos con las pistas de la playlist
     val items = remember { mutableStateListOf<TrackItem>() }
@@ -70,7 +72,7 @@ fun TwyperPreview(
                         items.add(tracks!![currentTrackIndex]) // Añadir la siguiente canción como nueva tarjeta
                     }
                 } else {
-                    Log.d("TwyperPreview", "No hay más canciones.")
+                    Log.d("P", "No hay más canciones.")
                 }
             }
         }
@@ -83,6 +85,8 @@ fun TwyperPreview(
                 if (success) {
                     loginSpotifyViewModel.getPlaylistTracks(loginSpotifyViewModel.getToken(), playlistId) {
                         tracks = loginSpotifyViewModel.tracks
+                        // Reordenamos aleatoriamente las pistas antes de añadirlas
+                        tracks = tracks!!.shuffled()
                         if (!tracks.isNullOrEmpty()) {
                             items.addAll(tracks!!) // Añadir todas las pistas a las tarjetas
                             playTrack(tracks!![0].preview_url)
@@ -96,7 +100,7 @@ fun TwyperPreview(
             loginSpotifyViewModel.getPlaylistTracks(loginSpotifyViewModel.getToken(), playlistId) {
                 tracks = loginSpotifyViewModel.tracks
                 if (!tracks.isNullOrEmpty()) {
-                    items.addAll(tracks!!) // Añadir todas las pistas a las tarjetas
+                        items.addAll(tracks!!) // Añadir todas las pistas a las tarjetas
                     playTrack(tracks!![0].preview_url)
                 }
             }
@@ -150,7 +154,7 @@ fun TwyperPreview(
                     val albumImageUrl = track.album.images.firstOrNull()?.url
                     if (albumImageUrl != null) {
                         Image(
-                            painter = rememberImagePainter(albumImageUrl),
+                            painter = rememberAsyncImagePainter(albumImageUrl),
                             contentDescription = "Album Image",
                             modifier = Modifier
                                 .size(300.dp) // Tamaño de la tarjeta
@@ -181,26 +185,33 @@ fun TwyperPreview(
                         fontFamily = customFontFamily, // Aplicamos la fuente personalizada
                         modifier = Modifier.widthIn(max = 280.dp) // Limitar el ancho máximo para evitar deformar la tarjeta
                     )
-                    Spacer(modifier = Modifier.height(5.dp))                }
+                    Spacer(modifier = Modifier.height(5.dp))
+                }
             }
 
             Spacer(modifier = Modifier.height(50.dp))
 
+
             Row(
                 horizontalArrangement = Arrangement.spacedBy(30.dp),
             ) {
-                IconButton(onClick = {
-                    mediaPlayer?.release() // Detener la reproducción actual
-                    // Al hacer clic en ❌, reproducir la siguiente canción y actualizar la tarjeta
-                    if (tracks != null && currentTrackIndex < tracks!!.size - 1) {
-                        currentTrackIndex++
-                        playTrack(tracks?.get(currentTrackIndex)?.preview_url)
-                        items.removeAt(0) // Eliminar la tarjeta actual
-                        if (currentTrackIndex < tracks!!.size) {
-                            items.add(tracks!![currentTrackIndex]) // Añadir la siguiente canción como nueva tarjeta
+                // Botón ❌ (Cerrar)
+                IconButton(
+                    onClick = {
+                        mediaPlayer?.release() // Detener la reproducción actual
+                        if (tracks != null && currentTrackIndex < tracks!!.size - 1) {
+                            currentTrackIndex++
+                            playTrack(tracks?.get(currentTrackIndex)?.preview_url)
+                            items.removeAt(0) // Eliminar la tarjeta actual
+                            if (currentTrackIndex < tracks!!.size) {
+                                items.add(tracks!![currentTrackIndex]) // Añadir la siguiente canción como nueva tarjeta
+                            }
                         }
-                    }
-                }) {
+                    },
+                    modifier = Modifier
+                        .size(40.dp) // Tamaño del botón
+                        .background(spotifyGreen, shape = CircleShape) // Fondo verde oscuro con forma circular
+                ) {
                     // Ícono de "Cerrar" (X)
                     Icon(
                         imageVector = Icons.Default.Close,
@@ -210,18 +221,23 @@ fun TwyperPreview(
                     )
                 }
 
-                IconButton(onClick = {
-                    mediaPlayer?.release() // Detener la reproducción actual
-                    // Al hacer clic en ✅, reproducir la siguiente canción y actualizar la tarjeta
-                    if (tracks != null && currentTrackIndex < tracks!!.size - 1) {
-                        currentTrackIndex++
-                        playTrack(tracks?.get(currentTrackIndex)?.preview_url)
-                        items.removeAt(0) // Eliminar la tarjeta actual
-                        if (currentTrackIndex < tracks!!.size) {
-                            items.add(tracks!![currentTrackIndex]) // Añadir la siguiente canción como nueva tarjeta
+                // Botón ✅ (Check)
+                IconButton(
+                    onClick = {
+                        mediaPlayer?.release() // Detener la reproducción actual
+                        if (tracks != null && currentTrackIndex < tracks!!.size - 1) {
+                            currentTrackIndex++
+                            playTrack(tracks?.get(currentTrackIndex)?.preview_url)
+                            items.removeAt(0) // Eliminar la tarjeta actual
+                            if (currentTrackIndex < tracks!!.size) {
+                                items.add(tracks!![currentTrackIndex]) // Añadir la siguiente canción como nueva tarjeta
+                            }
                         }
-                    }
-                }) {
+                    },
+                    modifier = Modifier
+                        .size(40.dp) // Tamaño del botón
+                        .background(spotifyGreen, shape = CircleShape) // Fondo verde oscuro con forma circular
+                ) {
                     // Ícono de "Check"
                     Icon(
                         imageVector = Icons.Default.Check,

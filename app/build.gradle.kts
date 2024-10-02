@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     id("com.google.gms.google-services") version "4.4.2"
+    id("org.jetbrains.kotlin.kapt")
 }
 
 android {
@@ -72,7 +73,6 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.transport.runtime)
 
-
     //twyper
     implementation("com.github.theapache64:twyper:0.0.4")
     implementation("androidx.compose.runtime:runtime-saveable:1.0.0")
@@ -108,6 +108,11 @@ dependencies {
     //Material3 icons
     implementation("androidx.compose.material:material-icons-extended:1.5.4")
     implementation("androidx.compose.material:material:1.0.0")
+
+    //room
+    implementation("androidx.room:room-runtime:2.5.0")
+    kapt("androidx.room:room-compiler:2.5.0")
+    implementation("androidx.room:room-ktx:2.5.0")
 
     //-- Testing
     testImplementation(libs.junit)
