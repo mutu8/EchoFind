@@ -18,7 +18,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.nio.charset.StandardCharsets
 
-class LoginSpotifyViewModel : ViewModel() {
+class LoginSpotifyViewModel(
+    private val authViewModel: AuthViewModel ) : ViewModel() {
 
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://accounts.spotify.com/")
@@ -92,6 +93,12 @@ class LoginSpotifyViewModel : ViewModel() {
             Log.e("MediaPlayerError", "Error al reproducir la vista previa: ${e.message}")
             null // Retorna null si ocurre algún error
         }
+    }
+
+    // Función para seleccionar y guardar una canción
+    fun seleccionarCancion(trackItem: TrackItem) {
+        // Llamada para guardar la canción en Firestore
+        authViewModel.guardarCancionSeleccionada(trackItem)
     }
 
     // ViewModel interno para Spotify

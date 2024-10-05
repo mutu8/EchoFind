@@ -20,7 +20,7 @@ import androidx.navigation.NavController
 import com.airbnb.lottie.compose.*
 import com.example.echofind.data.viewmodel.AuthViewModel
 import com.example.echofind.R
-import com.example.echofind.data.model.player.Auth.AuthState
+import com.example.echofind.data.model.firebase.AuthState
 
 @Composable
 fun LoginScreen(navController: NavController) {

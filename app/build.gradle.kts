@@ -54,6 +54,8 @@ android {
 dependencies {
     // Firebase BoM
     implementation(platform(libs.firebase.bom))
+    implementation(libs.google.firebase.auth.ktx)
+    implementation(libs.play.services.auth)
 
     // OnBoarding
     implementation(libs.accompanist.pager)
@@ -113,6 +115,9 @@ dependencies {
     implementation("androidx.room:room-runtime:2.5.0")
     kapt("androidx.room:room-compiler:2.5.0")
     implementation("androidx.room:room-ktx:2.5.0")
+
+    //Lectura de json
+    implementation("com.google.code.gson:gson:2.8.6")
 
     //-- Testing
     testImplementation(libs.junit)
