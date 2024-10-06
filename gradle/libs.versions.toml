@@ -17,6 +17,7 @@ composeBom = "2024.04.01"
 lottieCompose = "5.2.0"
 mssqlJdbc = "10.2.0.jre8"
 navigationCompose = "2.8.0"
+playServicesAuth = "21.2.0"
 runtimeSaveable = "1.7.0"
 transportRuntime = "3.0.1"
 twyper = "0.0.4"
@@ -37,6 +38,7 @@ androidx-navigation-compose = { module = "androidx.navigation:navigation-compose
 androidx-runtime-saveable = { module = "androidx.compose.runtime:runtime-saveable", version.ref = "runtimeSaveable" }
 firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+google-firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -52,6 +54,7 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "lottieCompose" }
 mssql-jdbc = { module = "com.microsoft.sqlserver:mssql-jdbc", version.ref = "mssqlJdbc" }
+play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 transport-runtime = { module = "com.google.android.datatransport:transport-runtime", version.ref = "transportRuntime" }
 twyper = { module = "com.github.theapache64:twyper", version.ref = "twyper" }
 ui-graphics = { module = "androidx.compose.ui:ui-graphics", version.ref = "uiGraphics" }

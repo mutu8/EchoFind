@@ -1,0 +1,28 @@
+{
+  "faq": [
+    {
+      "pregunta": "¿Qué es Echofind?",
+      "respuesta": "Echofind es una aplicación de descubrimiento de música que permite guardar canciones recomendadas, reproducir vistas previas de Spotify y gestionar playlists."
+    },
+    {
+      "pregunta": "¿Cómo puedo guardar una canción recomendada en Echofind?",
+      "respuesta": "Cuando recibes una recomendación, puedes guardarla tocando el botón de 'Guardar' para agregarla a tu lista de canciones guardadas."
+    },
+    {
+      "pregunta": "¿Puedo escuchar una vista previa de las canciones en Echofind?",
+      "respuesta": "Sí, Echofind te permite reproducir vistas previas de las canciones recomendadas a través de la integración con Spotify."
+    },
+    {
+      "pregunta": "¿Cómo puedo crear una nueva playlist en Echofind?",
+      "respuesta": "Puedes crear una nueva playlist en Echofind importando las canciones guardadas. Selecciona las canciones y elige 'Crear nueva playlist' para agregar las canciones a una lista nueva en tu cuenta de Spotify."
+    },
+    {
+      "pregunta": "¿Puedo agregar canciones guardadas a una playlist existente?",
+      "respuesta": "Sí, Echofind te permite seleccionar canciones guardadas y agregarlas a una playlist existente en tu cuenta de Spotify."
+    },
+    {
+      "pregunta": "¿Cómo sincronizo mis canciones guardadas con Spotify?",
+      "respuesta": "Echofind se conecta a tu cuenta de Spotify para sincronizar las canciones guardadas. Solo necesitas autorizar el acceso y podrás importar canciones a playlists nuevas o existentes."
+    }
+  ]
+}

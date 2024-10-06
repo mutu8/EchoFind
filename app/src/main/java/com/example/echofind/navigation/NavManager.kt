@@ -22,10 +22,11 @@ import com.example.echofind.data.navbar.NavigationItem
 import com.example.echofind.ui.screens.TwyperPreview
 import androidx.compose.foundation.layout.systemBarsPadding
 import com.example.echofind.data.viewmodel.AuthViewModel
+import com.example.echofind.data.viewmodel.LoginSpotifyViewModelFactory
+import com.example.echofind.ui.components.forScreens.cargarPreguntasRespuestas
+import com.example.echofind.ui.screens.ChatbotScreen
 import com.example.echofind.ui.screens.ProfileScreen
-import com.example.echofind.ui.screens.Song
 import com.example.echofind.ui.screens.SongListScreen
-import com.example.echofind.ui.screens.sampleSongs
 
 @Composable
 fun NavManager() {
@@ -36,12 +37,17 @@ fun NavManager() {
     val navController = rememberNavController()
 
     // Obtener una instancia del LoginViewModel
-    val loginSpotifyViewModel: LoginSpotifyViewModel = viewModel()
     val loginAppViewModel: AuthViewModel = viewModel()
+
+    val loginSpotifyViewModel: LoginSpotifyViewModel = viewModel(
+        factory = LoginSpotifyViewModelFactory(loginAppViewModel)
+    )
 
     // Verificar si la ruta actual es TwyperPreview para mostrar la barra de navegación
     val navBackStackEntry = navController.currentBackStackEntryAsState().value
     val currentRoute = navBackStackEntry?.destination?.route
+
+    val preguntasRespuestas = cargarPreguntasRespuestas(context)
 
     Scaffold(
         bottomBar = {
@@ -76,14 +82,22 @@ fun NavManager() {
             composable("profileScreen") {
                 ProfileScreen(navController, loginAppViewModel)
             }
-            // Nueva ruta para ProfileScreen
+            // Nueva ruta para SongListScreen
             composable("songListScreen") {
+                // Instancia de AuthViewModel (asegúrate de que esté disponible en el alcance del NavHost)
+                val authViewModel: AuthViewModel = viewModel()
+
                 SongListScreen(
                     navController = navController,
-                    songs = sampleSongs,  // Lista de canciones definida antes
-                    onSongClick = {
+                    authViewModel,
+                    onSongClick = { selectedSong ->
+                        //navController.navigate("songDetail/${selectedSong.title}")
                     }
                 )
+            }
+            // Pantalla del chatbot
+            composable("chatbot") {
+                ChatbotScreen( preguntasRespuestas = preguntasRespuestas, navController = navController)
             }
         }
     }

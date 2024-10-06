@@ -25,3 +25,4 @@ class StoreBoarding(private val context: Context){
         }
     }
 }
+    

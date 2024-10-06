@@ -2,6 +2,8 @@ package com.example.echofind.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -63,7 +65,20 @@ fun RegisterScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         ) {
 
+            // Icono de retroceso en la parte superior izquierda
+            IconButton(
+                onClick = { navController.popBackStack() }, // Acción para retroceder
+                modifier = Modifier
+                    .align(Alignment.Start)
+                    .padding(top = 16.dp, start = 16.dp) // Ajuste de posición
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack, // Icono de retroceso por defecto
+                    contentDescription = "Back"
+                )
+            }
             Spacer(modifier = Modifier.height(16.dp))
+
             TextField(
                 value = username,
                 onValueChange = { username = it },

@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
@@ -24,10 +25,15 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.echofind.R
+import com.example.echofind.data.model.dataStore.UserDataStore
 import com.example.echofind.data.model.player.TrackItem
+import com.example.echofind.data.viewmodel.AuthViewModel
 import com.github.theapache64.twyper.Twyper
 import com.github.theapache64.twyper.rememberTwyperController
 import com.example.echofind.data.viewmodel.LoginSpotifyViewModel
+import com.example.echofind.data.viewmodel.LoginSpotifyViewModelFactory
+import com.github.theapache64.twyper.SwipedOutDirection
+import kotlinx.coroutines.launch
 
 // Define la fuente personalizada utilizando el archivo de la fuente
 val customFontFamily = FontFamily(
@@ -37,12 +43,49 @@ val customFontFamily = FontFamily(
 @Composable
 fun TwyperPreview(
     loginSpotifyViewModel: LoginSpotifyViewModel = viewModel(),
-    playlistId: String = "3XOOP3blM46c8iGAFK0ypd" // Playlist por defecto
+    authViewModel: AuthViewModel = viewModel(), // Añadir AuthViewModel,
+    playlistId: String = "37i9dQZF1DXdpy4ZQQMZKm" // Playlist por defecto
 ) {
     var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
     var tracks by remember { mutableStateOf<List<TrackItem>?>(null) }
     var currentTrackIndex by remember { mutableIntStateOf(0) }
     val twyperController = rememberTwyperController()
+
+    // Declaración de contadores de interacción y coroutineScope
+    var swipes by remember { mutableStateOf(0) }
+    var likes by remember { mutableStateOf(0) }
+    var dislikes by remember { mutableStateOf(0) }
+    val coroutineScope = rememberCoroutineScope()
+
+    // Definición de userDataStore con manejo de nullabilidad
+    val context = LocalContext.current
+    val userId = authViewModel.getUserId()
+    val userDataStore: UserDataStore? = userId?.let { UserDataStore.getInstance(context, it) }
+
+    // Cargar valores iniciales desde DataStore al iniciar
+    LaunchedEffect(userDataStore) {
+        userDataStore?.userInteractions?.collect { interactions ->
+            swipes = interactions["swipes"] ?: 0
+            likes = interactions["likes"] ?: 0
+            dislikes = interactions["dislikes"] ?: 0
+            Log.d("UserDataStore", "Cargando: Swipes - $swipes, Likes - $likes, Dislikes - $dislikes")
+        }
+    }
+
+
+    // Guardar los valores actualizados de los contadores en DataStore
+    LaunchedEffect(swipes, likes, dislikes) {
+        coroutineScope.launch {
+            userDataStore?.saveUserInteraction(swipes, likes, dislikes)
+            Log.d("UserDataStore", "Guardando: Swipes - $swipes, Likes - $likes, Dislikes - $dislikes")
+        }
+    }
+
+
+    // Inicializar el ViewModel de Spotify con el ViewModel de autenticación
+    val loginSpotifyViewModel: LoginSpotifyViewModel = viewModel(
+        factory = LoginSpotifyViewModelFactory(authViewModel)
+    )
 
     // Definir el color verde oscuro
     val spotifyGreen = Color(0xFF1DB954)
@@ -130,7 +173,26 @@ fun TwyperPreview(
                 onItemRemoved = { track, direction ->
                     mediaPlayer?.release() // Detener la reproducción actual
 
-                    // Para ambos gestos (izquierda y derecha), reproducir la siguiente canción y actualizar la tarjeta
+                    // Verificar la dirección del swipe usando swipedOutDirection
+                    if (twyperController.currentCardController?.swipedOutDirection == SwipedOutDirection.RIGHT) {
+                        likes++
+                        swipes++
+                        // Si fue hacia la derecha (like), guardar la canción
+                        coroutineScope.launch {
+                            authViewModel.guardarCancionSeleccionada(track)
+                        }
+                    }
+                    // Verificar la dirección del swipe usando swipedOutDirection
+                    if (twyperController.currentCardController?.swipedOutDirection == SwipedOutDirection.LEFT) {
+                        dislikes++
+                        swipes++
+                        // Si fue hacia la izquierda (dislike), guardar la canción
+                        coroutineScope.launch {
+                            authViewModel.guardarCancionDislikeada(track)
+                        }
+                    }
+
+                        // Para ambos gestos (izquierda y derecha), reproducir la siguiente canción y actualizar la tarjeta
                     if (tracks != null && currentTrackIndex < tracks!!.size - 1) {
                         currentTrackIndex++
                         playTrack(tracks?.get(currentTrackIndex)?.preview_url)
@@ -199,6 +261,12 @@ fun TwyperPreview(
                 IconButton(
                     onClick = {
                         mediaPlayer?.release() // Detener la reproducción actual
+                        dislikes++
+                        swipes++
+                        val track = tracks?.get(currentTrackIndex) // Obtener la pista actual
+                        if (track != null) {
+                            authViewModel.guardarCancionDislikeada(track) // Guardar la canción seleccionada en Firestore
+                        }
                         if (tracks != null && currentTrackIndex < tracks!!.size - 1) {
                             currentTrackIndex++
                             playTrack(tracks?.get(currentTrackIndex)?.preview_url)
@@ -225,6 +293,12 @@ fun TwyperPreview(
                 IconButton(
                     onClick = {
                         mediaPlayer?.release() // Detener la reproducción actual
+                        likes++
+                        swipes++
+                        val track = tracks?.get(currentTrackIndex) // Obtener la pista actual
+                        if (track != null) {
+                            authViewModel.guardarCancionSeleccionada(track) // Guardar la canción seleccionada en Firestore
+                        }
                         if (tracks != null && currentTrackIndex < tracks!!.size - 1) {
                             currentTrackIndex++
                             playTrack(tracks?.get(currentTrackIndex)?.preview_url)

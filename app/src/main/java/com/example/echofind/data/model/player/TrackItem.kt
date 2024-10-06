@@ -5,5 +5,7 @@ data class TrackItem(
     val name: String,
     val preview_url: String?,
     val album: Album, // Información del álbum
-    val artists: List<Artist> // Lista de artistas
+    val artists: List<Artist>, // Lista de artistas
+    val popularity: Int, // Popularidad de la canción
+    val audioFeatures: AudioFeatures? = null // Características de audio opcionales
 )
