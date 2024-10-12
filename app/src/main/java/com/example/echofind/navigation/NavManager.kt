@@ -1,5 +1,7 @@
 package com.example.echofind.navigation
 
+import SongListScreen
+import TwyperPreview
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -19,14 +21,12 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.echofind.data.viewmodel.LoginSpotifyViewModel
 import com.example.echofind.ui.components.forScreens.BottomNavigationBar
 import com.example.echofind.data.navbar.NavigationItem
-import com.example.echofind.ui.screens.TwyperPreview
 import androidx.compose.foundation.layout.systemBarsPadding
 import com.example.echofind.data.viewmodel.AuthViewModel
 import com.example.echofind.data.viewmodel.LoginSpotifyViewModelFactory
 import com.example.echofind.ui.components.forScreens.cargarPreguntasRespuestas
 import com.example.echofind.ui.screens.ChatbotScreen
 import com.example.echofind.ui.screens.ProfileScreen
-import com.example.echofind.ui.screens.SongListScreen
 
 @Composable
 fun NavManager() {

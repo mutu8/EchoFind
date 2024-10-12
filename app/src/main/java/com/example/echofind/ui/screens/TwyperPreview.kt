@@ -1,6 +1,3 @@
-// Archivo: com.example.echofind.ui.screens.TwyperScreen.kt
-package com.example.echofind.ui.screens
-
 import android.media.MediaPlayer
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -23,6 +20,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.example.echofind.R
 import com.example.echofind.data.model.dataStore.UserDataStore
@@ -32,35 +30,99 @@ import com.github.theapache64.twyper.Twyper
 import com.github.theapache64.twyper.rememberTwyperController
 import com.example.echofind.data.viewmodel.LoginSpotifyViewModel
 import com.example.echofind.data.viewmodel.LoginSpotifyViewModelFactory
+import com.example.echofind.data.viewmodel.MediaPlayerViewModel
+import com.example.echofind.ui.components.forScreens.HandleLifecycleEvents
 import com.github.theapache64.twyper.SwipedOutDirection
 import kotlinx.coroutines.launch
 
 // Define la fuente personalizada utilizando el archivo de la fuente
 val customFontFamily = FontFamily(
-    Font(R.font.montserrat) // Cambia 'my_custom_font' al nombre del archivo que agregaste en res/font
+    Font(R.font.montserrat) // Fuente personalizada Montserrat
 )
 
 @Composable
 fun TwyperPreview(
     loginSpotifyViewModel: LoginSpotifyViewModel = viewModel(),
-    authViewModel: AuthViewModel = viewModel(), // Añadir AuthViewModel,
+    authViewModel: AuthViewModel = viewModel(),
+    mediaPlayerViewModel: MediaPlayerViewModel = viewModel(), // Añadir MediaPlayerViewModel
     playlistId: String = "37i9dQZF1DXdpy4ZQQMZKm" // Playlist por defecto
 ) {
-    var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+    HandleLifecycleEvents(mediaPlayerViewModel) // Se encarga de pausar el MediaPlayer
+
+    // Inicializamos con las pistas de la playlist
+    val items = remember { mutableStateListOf<TrackItem>() }
     var tracks by remember { mutableStateOf<List<TrackItem>?>(null) }
-    var currentTrackIndex by remember { mutableIntStateOf(0) }
     val twyperController = rememberTwyperController()
 
     // Declaración de contadores de interacción y coroutineScope
-    var swipes by remember { mutableStateOf(0) }
-    var likes by remember { mutableStateOf(0) }
-    var dislikes by remember { mutableStateOf(0) }
+    var swipes by remember { mutableIntStateOf(0) }
+    var likes by remember { mutableIntStateOf(0) }
+    var dislikes by remember { mutableIntStateOf(0) }
     val coroutineScope = rememberCoroutineScope()
 
     // Definición de userDataStore con manejo de nullabilidad
     val context = LocalContext.current
     val userId = authViewModel.getUserId()
     val userDataStore: UserDataStore? = userId?.let { UserDataStore.getInstance(context, it) }
+
+    val allEvaluatedIds = remember { mutableStateOf<Set<String>>(emptySet()) }
+
+    // Definir el color verde oscuro
+    val spotifyGreen = Color(0xFF1DB954)
+    // Estado de carga
+    var isLoading by remember { mutableStateOf(false) }
+
+    // Inicializar el ViewModel de Spotify con el ViewModel de autenticación
+    val loginSpotifyViewModel: LoginSpotifyViewModel = viewModel(
+        factory = LoginSpotifyViewModelFactory(authViewModel)
+    )
+
+    // Función para reproducir la canción seleccionada usando el MediaPlayerViewModel
+    fun playTrack() {
+        val previewUrl = items.firstOrNull()?.preview_url
+        if (previewUrl != null) {
+            mediaPlayerViewModel.startPlayback(previewUrl) {
+                // Acción al terminar la canción
+                if (items.isNotEmpty()) {
+                    items.removeAt(0)
+                    if (items.isNotEmpty()) {
+                        playTrack()
+                    } else {
+                        Log.d("TwyperPreview", "No hay más canciones.")
+                    }
+                }
+            }
+        }
+    }
+
+    // Función para cargar más recomendaciones
+    fun loadMoreRecommendations() {
+        isLoading = true
+        loginSpotifyViewModel.obtenerRecomendacionesActualizadas(loginSpotifyViewModel.getToken()) { recomendaciones ->
+            isLoading = false
+            if (recomendaciones.isNotEmpty()) {
+                // Filtrar canciones ya presentadas
+                val nuevasRecomendaciones = recomendaciones.filterNot { track ->
+                    authViewModel.getPresentedTrackIds().contains(track.id)
+                }
+
+                if (nuevasRecomendaciones.isNotEmpty()) {
+                    val nuevasRecomendacionesShuffled = nuevasRecomendaciones.shuffled()
+                    tracks = tracks?.plus(nuevasRecomendacionesShuffled) ?: nuevasRecomendacionesShuffled
+                    items.addAll(nuevasRecomendacionesShuffled)
+                    authViewModel.agregarCancionesPresentadas(nuevasRecomendacionesShuffled)
+                } else {
+                    Log.d("TwyperPreview", "No hay más recomendaciones.")
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(items.size) {
+        if (items.size <= 3) {
+            loadMoreRecommendations()
+        }
+    }
 
     // Cargar valores iniciales desde DataStore al iniciar
     LaunchedEffect(userDataStore) {
@@ -72,6 +134,9 @@ fun TwyperPreview(
         }
     }
 
+    LaunchedEffect(Unit) {
+        allEvaluatedIds.value = authViewModel.getAllEvaluatedTrackIds()
+    }
 
     // Guardar los valores actualizados de los contadores en DataStore
     LaunchedEffect(swipes, likes, dislikes) {
@@ -81,43 +146,10 @@ fun TwyperPreview(
         }
     }
 
-
-    // Inicializar el ViewModel de Spotify con el ViewModel de autenticación
-    val loginSpotifyViewModel: LoginSpotifyViewModel = viewModel(
-        factory = LoginSpotifyViewModelFactory(authViewModel)
-    )
-
-    // Definir el color verde oscuro
-    val spotifyGreen = Color(0xFF1DB954)
-
-    // Inicializamos con las pistas de la playlist
-    val items = remember { mutableStateListOf<TrackItem>() }
-
+    // Limpiar MediaPlayer al destruir el Composable
     DisposableEffect(Unit) {
         onDispose {
-            mediaPlayer?.release() // Libera el MediaPlayer cuando el Composable es destruido
-            mediaPlayer = null
-        }
-    }
-
-    // Función para reproducir la canción seleccionada
-    fun playTrack(previewUrl: String?) {
-        mediaPlayer?.release() // Libera el reproductor anterior si existe
-        if (previewUrl != null) {
-            mediaPlayer = loginSpotifyViewModel.playPreviewTrack(previewUrl) {
-                // Acción al terminar la canción: ir a la siguiente canción y actualizar tarjeta
-                if (tracks != null && currentTrackIndex < tracks!!.size - 1) {
-                    currentTrackIndex++
-                    playTrack(tracks?.get(currentTrackIndex)?.preview_url)
-                    // Actualizamos la tarjeta actual eliminando la tarjeta actual y añadiendo la nueva canción
-                    items.removeAt(0) // Eliminar la tarjeta actual
-                    if (currentTrackIndex < tracks!!.size) {
-                        items.add(tracks!![currentTrackIndex]) // Añadir la siguiente canción como nueva tarjeta
-                    }
-                } else {
-                    Log.d("P", "No hay más canciones.")
-                }
-            }
+            mediaPlayerViewModel.stopPlayback() // Usar el ViewModel para liberar el MediaPlayer
         }
     }
 
@@ -128,41 +160,40 @@ fun TwyperPreview(
                 if (success) {
                     loginSpotifyViewModel.getPlaylistTracks(loginSpotifyViewModel.getToken(), playlistId) {
                         tracks = loginSpotifyViewModel.tracks
-                        // Reordenamos aleatoriamente las pistas antes de añadirlas
-                        tracks = tracks!!.shuffled()
+                        tracks = tracks?.shuffled()
                         if (!tracks.isNullOrEmpty()) {
-                            items.addAll(tracks!!) // Añadir todas las pistas a las tarjetas
-                            playTrack(tracks!![0].preview_url)
+                            items.addAll(tracks!!.take(5))
+                            loadMoreRecommendations()
+                            playTrack() // Comienza a reproducir la primera pista en 'items'
                         }
                     }
                 } else {
-                    Log.e("TwyperPreview", "Error: Could not obtain token.")
+                    Log.e("TwyperPreview", "Error: No se pudo obtener el token.")
                 }
             }
         } else {
             loginSpotifyViewModel.getPlaylistTracks(loginSpotifyViewModel.getToken(), playlistId) {
                 tracks = loginSpotifyViewModel.tracks
+                tracks = tracks?.shuffled()
                 if (!tracks.isNullOrEmpty()) {
-                        items.addAll(tracks!!) // Añadir todas las pistas a las tarjetas
-                    playTrack(tracks!![0].preview_url)
+                    items.addAll(tracks!!.take(5))
+                    loadMoreRecommendations()
+                    playTrack() // Llamada sin argumentos
                 }
             }
         }
     }
 
-    // Pantalla principal con fondo degradado oscuro
+    // Interfaz de usuario
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF1B1B1B),   // Gris oscuro al inicio
-                        Color(0xFF000000)    // Negro en la parte inferior
-                    )
+                    colors = listOf(Color(0xFF1B1B1B), Color(0xFF000000))
                 )
             )
-            .padding(16.dp), // Opcional: puedes ajustar el padding si quieres márgenes en los bordes
+            .padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -171,158 +202,131 @@ fun TwyperPreview(
                 items = items,
                 twyperController = twyperController,
                 onItemRemoved = { track, direction ->
-                    mediaPlayer?.release() // Detener la reproducción actual
+                    mediaPlayerViewModel.stopPlayback()
 
-                    // Verificar la dirección del swipe usando swipedOutDirection
-                    if (twyperController.currentCardController?.swipedOutDirection == SwipedOutDirection.RIGHT) {
+                    if (direction == SwipedOutDirection.RIGHT) {
                         likes++
                         swipes++
-                        // Si fue hacia la derecha (like), guardar la canción
                         coroutineScope.launch {
                             authViewModel.guardarCancionSeleccionada(track)
+                            authViewModel.agregarCancionesPresentadas(listOf(track))
+                            playTrack()
                         }
-                    }
-                    // Verificar la dirección del swipe usando swipedOutDirection
-                    if (twyperController.currentCardController?.swipedOutDirection == SwipedOutDirection.LEFT) {
+                    } else if (direction == SwipedOutDirection.LEFT) {
                         dislikes++
                         swipes++
-                        // Si fue hacia la izquierda (dislike), guardar la canción
                         coroutineScope.launch {
                             authViewModel.guardarCancionDislikeada(track)
+                            authViewModel.agregarCancionesPresentadas(listOf(track))
+                            playTrack()
                         }
                     }
-
-                        // Para ambos gestos (izquierda y derecha), reproducir la siguiente canción y actualizar la tarjeta
-                    if (tracks != null && currentTrackIndex < tracks!!.size - 1) {
-                        currentTrackIndex++
-                        playTrack(tracks?.get(currentTrackIndex)?.preview_url)
-                        items.remove(track) // Eliminar la tarjeta actual
-                        if (currentTrackIndex < tracks!!.size) {
-                            items.add(tracks!![currentTrackIndex]) // Añadir la siguiente canción como nueva tarjeta
-                        }
+                    items.remove(track)
+                    if (items.isNotEmpty()) {
+                        playTrack()
                     } else {
-                        Log.d("TwyperPreview", "No hay más canciones.")
+                        Log.d("TwyperPreview", "Se han terminado las canciones.")
                     }
-                },
-                onEmpty = {
-                    Log.d("TwyperPreview", "Se han terminado las canciones.")
                 }
             ) { track ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    // Imagen del álbum que ocupa toda la tarjeta
                     val albumImageUrl = track.album.images.firstOrNull()?.url
                     if (albumImageUrl != null) {
-                        Image(
-                            painter = rememberAsyncImagePainter(albumImageUrl),
-                            contentDescription = "Album Image",
-                            modifier = Modifier
-                                .size(300.dp) // Tamaño de la tarjeta
+                        AsyncImage(
+                            model = albumImageUrl,
+                            contentDescription = "Imagen del álbum",
+                            modifier = Modifier.size(300.dp)
                         )
                     }
 
-                    // El texto está fuera de la tarjeta, alineado debajo de la imagen
                     Spacer(modifier = Modifier.height(8.dp))
-
-                    // Mostrar el nombre de la canción con la fuente personalizada
                     Text(
                         text = track.name,
                         fontSize = 24.sp,
-                        color = Color.Black, // Cambiado a blanco para mejor contraste con fondo oscuro
-                        maxLines = 1, // Limitar a una línea
-                        overflow = TextOverflow.Ellipsis, // Si es muy largo, agregar "..."
-                        fontFamily = customFontFamily, // Aplicamos la fuente personalizada
-                        modifier = Modifier.widthIn(max = 280.dp) // Limitar el ancho máximo para evitar deformar la tarjeta
+                        color = Color.Black,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontFamily = customFontFamily,
+                        modifier = Modifier.widthIn(max = 280.dp)
                     )
 
-                    // Mostrar los artistas con la fuente personalizada
                     Text(
                         text = track.artists.joinToString(", ") { it.name },
                         fontSize = 18.sp,
-                        color = Color.Black, // Color claro para mejor visibilidad
-                        maxLines = 1, // Limitar a una línea
-                        overflow = TextOverflow.Ellipsis, // Si es muy largo, agregar "..."
-                        fontFamily = customFontFamily, // Aplicamos la fuente personalizada
-                        modifier = Modifier.widthIn(max = 280.dp) // Limitar el ancho máximo para evitar deformar la tarjeta
+                        color = Color.Black,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontFamily = customFontFamily,
+                        modifier = Modifier.widthIn(max = 280.dp)
                     )
+
                     Spacer(modifier = Modifier.height(5.dp))
                 }
             }
 
             Spacer(modifier = Modifier.height(50.dp))
 
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(30.dp),
-            ) {
-                // Botón ❌ (Cerrar)
+            Row(horizontalArrangement = Arrangement.spacedBy(30.dp)) {
+                // Botón ❌ (Dislike)
                 IconButton(
                     onClick = {
-                        mediaPlayer?.release() // Detener la reproducción actual
+                        mediaPlayerViewModel.stopPlayback()
                         dislikes++
                         swipes++
-                        val track = tracks?.get(currentTrackIndex) // Obtener la pista actual
+                        val track = items.firstOrNull()
                         if (track != null) {
-                            authViewModel.guardarCancionDislikeada(track) // Guardar la canción seleccionada en Firestore
-                        }
-                        if (tracks != null && currentTrackIndex < tracks!!.size - 1) {
-                            currentTrackIndex++
-                            playTrack(tracks?.get(currentTrackIndex)?.preview_url)
-                            items.removeAt(0) // Eliminar la tarjeta actual
-                            if (currentTrackIndex < tracks!!.size) {
-                                items.add(tracks!![currentTrackIndex]) // Añadir la siguiente canción como nueva tarjeta
+                            coroutineScope.launch {
+                                authViewModel.guardarCancionDislikeada(track)
+                                items.removeAt(0)
+                                authViewModel.agregarCancionesPresentadas(listOf(track))
+                                playTrack()
                             }
                         }
                     },
                     modifier = Modifier
-                        .size(40.dp) // Tamaño del botón
-                        .background(spotifyGreen, shape = CircleShape) // Fondo verde oscuro con forma circular
+                        .size(40.dp)
+                        .background(spotifyGreen, shape = CircleShape)
                 ) {
-                    // Ícono de "Cerrar" (X)
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Close",
-                        tint = Color.White, // Color del ícono
+                        contentDescription = "Dislike",
+                        tint = Color.White,
                         modifier = Modifier.size(30.dp)
                     )
                 }
 
-                // Botón ✅ (Check)
+                // Botón Like
                 IconButton(
                     onClick = {
-                        mediaPlayer?.release() // Detener la reproducción actual
+                        mediaPlayerViewModel.stopPlayback()
                         likes++
                         swipes++
-                        val track = tracks?.get(currentTrackIndex) // Obtener la pista actual
+                        val track = items.firstOrNull()
                         if (track != null) {
-                            authViewModel.guardarCancionSeleccionada(track) // Guardar la canción seleccionada en Firestore
-                        }
-                        if (tracks != null && currentTrackIndex < tracks!!.size - 1) {
-                            currentTrackIndex++
-                            playTrack(tracks?.get(currentTrackIndex)?.preview_url)
-                            items.removeAt(0) // Eliminar la tarjeta actual
-                            if (currentTrackIndex < tracks!!.size) {
-                                items.add(tracks!![currentTrackIndex]) // Añadir la siguiente canción como nueva tarjeta
+                            coroutineScope.launch {
+                                authViewModel.guardarCancionSeleccionada(track)
+                                items.removeAt(0)
+                                authViewModel.agregarCancionesPresentadas(listOf(track))
+                                playTrack()
                             }
                         }
                     },
                     modifier = Modifier
-                        .size(40.dp) // Tamaño del botón
-                        .background(spotifyGreen, shape = CircleShape) // Fondo verde oscuro con forma circular
+                        .size(40.dp)
+                        .background(spotifyGreen, shape = CircleShape)
                 ) {
-                    // Ícono de "Check"
                     Icon(
                         imageVector = Icons.Default.Check,
-                        contentDescription = "Check",
-                        tint = Color.White, // Color del ícono
+                        contentDescription = "Like",
+                        tint = Color.White,
                         modifier = Modifier.size(30.dp)
                     )
                 }
             }
         } else {
-            // Mostrar un mensaje mientras se cargan las pistas
             Text(text = "Cargando pistas...", fontSize = 18.sp, color = Color.White, fontFamily = customFontFamily)
         }
     }

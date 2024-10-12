@@ -1,28 +1,24 @@
-// Archivo: com.example.echofind.data.test.LoginViewModel.kt
-
 package com.example.echofind.data.viewmodel
 
-import android.annotation.SuppressLint
+import android.app.Activity
 import android.media.MediaPlayer
 import android.util.Base64
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.echofind.data.model.player.AudioFeatures
 import com.example.echofind.data.model.player.TrackItem
 import com.example.echofind.data.service.AuthService
-import com.example.echofind.data.service.SpotifyService
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
+import com.spotify.sdk.android.auth.AuthorizationClient
+import com.spotify.sdk.android.auth.AuthorizationRequest
+import com.spotify.sdk.android.auth.AuthorizationResponse
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.nio.charset.StandardCharsets
 
 class LoginSpotifyViewModel(
-    private val authViewModel: AuthViewModel
-) : ViewModel() {
+    private val authViewModel: AuthViewModel ) : ViewModel() {
 
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://accounts.spotify.com/")
@@ -35,6 +31,30 @@ class LoginSpotifyViewModel(
     // Almacenamiento de las pistas en el ViewModel
     private val _tracks = mutableStateListOf<TrackItem>()
     val tracks: List<TrackItem> = _tracks
+
+    // Variables para manejar caché de recomendaciones
+    private var recomendacionesCache: List<TrackItem>? = null
+    private var cacheTimestamp: Long = 0L
+
+    companion object {
+        private const val CLIENT_ID = "90df872385dc4d2384526261a76ddfe3" // Reemplaza con tu Client ID de Spotify
+        private const val REDIRECT_URI = "http://testeo8m.my.canva.site/dagtckwngme" // Debe coincidir con el registrado en Spotify
+    }
+    private val REQUEST_CODE = 1337
+    private var refreshToken: String = ""
+    private var codeVerifier: String = ""
+
+    fun initiateSpotifyLogin(activity: Activity) {
+        val builder = AuthorizationRequest.Builder(
+            CLIENT_ID,
+            AuthorizationResponse.Type.TOKEN,
+            REDIRECT_URI
+        )
+        builder.setScopes(arrayOf("user-read-private", "user-read-email")) // Agrega los scopes necesarios
+        val request = builder.build()
+        AuthorizationClient.openLoginActivity(activity, REQUEST_CODE, request)
+    }
+
 
     fun login(clientId: String, clientSecret: String, callback: (Boolean) -> Unit) {
         viewModelScope.launch {
@@ -58,59 +78,60 @@ class LoginSpotifyViewModel(
         return accessToken
     }
 
-    // Función para obtener las pistas de una playlist y almacenarlas en el ViewModel
+    fun setAccessToken(token: String) {
+        accessToken = token
+    }
+
+    // Obtener recomendaciones actualizadas sin caché
+    fun obtenerRecomendacionesActualizadas(token: String, callback: (List<TrackItem>) -> Unit) {
+        authViewModel.generarYFiltrarRecomendaciones(token) { nuevasRecomendaciones ->
+            callback(nuevasRecomendaciones)
+        }
+    }
     fun getPlaylistTracks(token: String, playlistId: String, callback: () -> Unit) {
-        viewModelScope.launch {
-            try {
-                val spotifyViewModel = SpotifyViewModel()
+        authViewModel.obtenerIdsCancionesLikeadasYDeslikeadas { idsLikeadas, idsDislikeadas ->
+            val idsAFiltrar = idsLikeadas + idsDislikeadas
 
-                // Obtener las pistas de la playlist
-                val playlistTracks = spotifyViewModel.getPlaylistTracks(token, playlistId)
+            viewModelScope.launch {
+                try {
+                    val spotifyViewModel = SpotifyViewModel()
+                    val playlistTracks = spotifyViewModel.getPlaylistTracks(token, playlistId, idsAFiltrar)
+                    _tracks.clear()
 
-                if (playlistTracks != null) {
-                    // Obtener las características de audio de las pistas en paralelo
-                    getAudioFeaturesForTracks(token, playlistTracks) { tracksWithFeatures ->
-                        _tracks.clear()
-                        _tracks.addAll(tracksWithFeatures) // Añadir las pistas con características al ViewModel
-                        callback() // Llamar al callback después de actualizar las pistas
+                    if (playlistTracks != null) {
+                        _tracks.addAll(playlistTracks) // Agregar los tracks filtrados
                     }
-                } else {
-                    callback() // No se encontraron pistas en la playlist
+
+                    callback()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    callback()
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                callback() // Error
             }
         }
     }
 
-    private fun getAudioFeaturesForTracks(token: String, trackItems: List<TrackItem>, callback: (List<TrackItem>) -> Unit) {
-        viewModelScope.launch {
-            try {
-                val spotifyViewModel = SpotifyViewModel()
+    fun obtenerRecomendacionesConCache(token: String, callback: (List<TrackItem>) -> Unit) {
+        val currentTime = System.currentTimeMillis()
+        val cacheDuration = 10 * 60 * 1000 // 10 minutos en milisegundos
 
-                // Iniciar todas las solicitudes de forma paralela usando async
-                val tracksWithFeatures = trackItems.map { trackItem ->
-                    async {
-                        val audioFeatures = spotifyViewModel.getAudioFeatures(trackItem.id)
-                        // Si las características se obtienen, devolver el TrackItem con las características añadidas
-                        if (audioFeatures != null) {
-                            trackItem.copy(audioFeatures = audioFeatures)
-                        } else {
-                            null // Si hay un error o no se obtienen las características, devolver null
-                        }
-                    }
-                }.awaitAll().filterNotNull() // Esperar que todas las solicitudes finalicen y filtrar los resultados nulos
+        if (recomendacionesCache != null && (currentTime - cacheTimestamp) < cacheDuration) {
 
-                // Devolver la lista de pistas con las características de audio agregadas
-                callback(tracksWithFeatures)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                callback(emptyList()) // En caso de error, devolver una lista vacía
+            // Usar caché si es válida
+            callback(recomendacionesCache!!)
+        } else {
+            // Obtener nuevas recomendaciones usando el método actualizado
+            authViewModel.generarYFiltrarRecomendaciones(token) { nuevasRecomendaciones ->
+                if (nuevasRecomendaciones.isNotEmpty()) {
+                    recomendacionesCache = nuevasRecomendaciones
+                    cacheTimestamp = currentTime
+                    callback(nuevasRecomendaciones)
+                } else {
+                    callback(emptyList())
+                }
             }
         }
     }
-
 
     // Función para reproducir la vista previa de una pista y cambiar automáticamente al terminar
     fun playPreviewTrack(previewUrl: String, onCompletion: () -> Unit): MediaPlayer? {
@@ -134,36 +155,5 @@ class LoginSpotifyViewModel(
         }
     }
 
-    // ViewModel interno para Spotify
-    @SuppressLint("StaticFieldLeak")
-    inner class SpotifyViewModel : ViewModel() {
-        private val retrofit = Retrofit.Builder()
-            .baseUrl("https://api.spotify.com/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
 
-        private val spotifyService = retrofit.create(SpotifyService::class.java)
-
-        // Función para obtener las características de audio de una canción específica
-        suspend fun getAudioFeatures(trackId: String): AudioFeatures? {
-            return try {
-                // Llamar al método de la instancia `spotifyService` en lugar de la interfaz
-                spotifyService.getAudioFeatures("Bearer $accessToken", trackId)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
-            }
-        }
-
-        // Función para obtener las pistas de una lista de reproducción
-        suspend fun getPlaylistTracks(token: String, playlistId: String): List<TrackItem>? {
-            return try {
-                val response = spotifyService.getPlaylistTracks("Bearer $token", playlistId)
-                response.items.map { it.track }.filter { it.preview_url != null }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null // Error
-            }
-        }
     }
-}

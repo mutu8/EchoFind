@@ -119,6 +119,9 @@ dependencies {
     //Lectura de json
     implementation("com.google.code.gson:gson:2.8.6")
 
+    //spotify
+    implementation("com.spotify.android:auth:1.2.3")
+
     //-- Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

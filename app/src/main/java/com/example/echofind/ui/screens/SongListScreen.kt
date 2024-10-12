@@ -1,9 +1,5 @@
-package com.example.echofind.ui.screens
-
 import android.media.MediaPlayer
 import androidx.compose.foundation.ExperimentalFoundationApi
-import com.example.echofind.data.model.player.Song
-import com.example.echofind.data.viewmodel.AuthViewModel
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
+import com.example.echofind.data.model.player.Song
+import com.example.echofind.data.viewmodel.AuthViewModel
 import kotlinx.coroutines.delay
 
 @Composable
@@ -53,13 +51,18 @@ fun SongListScreen(
         }
     }
 
-    // Reiniciar el progreso y gestionar la reproducción cada vez que cambie la canción
-    LaunchedEffect(playingSongTitle) {
+    // Mantener actualizado el progreso y gestionar la reproducción
+    LaunchedEffect(playingSongTitle, isPlaying) {
         if (mediaPlayer != null && isPlaying) {
+            duration = mediaPlayer?.duration ?: 0
             while (mediaPlayer?.isPlaying == true) {
                 currentProgress = mediaPlayer?.currentPosition?.toFloat()?.div(duration) ?: 0f
                 delay(100)
             }
+            // Resetear el estado al terminar la reproducción
+            isPlaying = false
+            playingSongTitle = null
+            currentProgress = 0f
         }
     }
 
@@ -72,8 +75,8 @@ fun SongListScreen(
             confirmButton = {
                 Button(onClick = {
                     songToDelete?.let {
-                        authViewModel.eliminarCancionGuardada(it) // Llamar a la función de eliminación en el ViewModel
-                        songs = songs.filter { song -> song != it } // Eliminar la canción de la lista local
+                        authViewModel.eliminarCancionGuardada(it)
+                        songs = songs.filter { song -> song != it }
                         if (playingSongTitle == it.title) {
                             mediaPlayer?.release()
                             mediaPlayer = null
@@ -111,10 +114,13 @@ fun SongListScreen(
             ) {
                 items(songs.size) { index ->
                     val song = songs[index]
+                    val isCurrentlyPlaying = playingSongTitle == song.title && isPlaying
+                    val cardColor = if (isCurrentlyPlaying) Color.Green else Color.LightGray
+
                     SongCard(
                         song = song,
-                        currentProgress = if (playingSongTitle == song.title) currentProgress else 0f,
-                        isPlaying = playingSongTitle == song.title && isPlaying,
+                        currentProgress = if (isCurrentlyPlaying) currentProgress else 0f,
+                        isPlaying = isCurrentlyPlaying,
                         onClick = {
                             onSongClick(song)
 
@@ -124,7 +130,7 @@ fun SongListScreen(
                                 mediaPlayer = MediaPlayer().apply {
                                     setDataSource(previewUrl)
                                     setOnPreparedListener {
-                                        currentProgress = 0f // Reiniciar el progreso al cambiar de canción
+                                        currentProgress = 0f
                                         duration = this.duration
                                         start()
                                         isPlaying = true
@@ -144,10 +150,10 @@ fun SongListScreen(
                             }
                         },
                         onLongClick = {
-                            songToDelete = song // Asignar la canción seleccionada para eliminar
-                            showDeleteDialog = true // Mostrar el popup
+                            songToDelete = song
+                            showDeleteDialog = true
                         },
-                        cardColor = if (playingSongTitle == song.title && isPlaying) Color.Green else Color.LightGray // Cambiar el color de la tarjeta si se está reproduciendo
+                        cardColor = cardColor
                     )
                 }
             }
@@ -168,19 +174,21 @@ fun SongCard(
     currentProgress: Float,
     isPlaying: Boolean,
     onClick: () -> Unit,
-    onLongClick: () -> Unit, // Añadir la función para el long click
+    onLongClick: () -> Unit,
     cardColor: Color
 ) {
+    val artistName = Regex("""name=([^,}]+)""").find(song.artist)?.groupValues?.get(1) ?: "Artista desconocido"
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .combinedClickable(
                 onClick = onClick,
-                onLongClick = onLongClick // Detectar el long click
+                onLongClick = onLongClick
             ),
         shape = RoundedCornerShape(12.dp),
-        backgroundColor = cardColor, // Cambia el color de la tarjeta acorde a la reproducción
+        backgroundColor = cardColor,
         elevation = 4.dp
     ) {
         Box(
@@ -213,7 +221,7 @@ fun SongCard(
                             color = Color.Black
                         )
                         Text(
-                            text = song.artist,
+                            text = artistName,
                             fontSize = 14.sp,
                             color = Color.Gray
                         )
@@ -227,11 +235,9 @@ fun SongCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .align(Alignment.BottomCenter),
-                    color = Color.Green
+                    color = Color.White
                 )
             }
         }
     }
 }
-
-
