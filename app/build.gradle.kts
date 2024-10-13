@@ -122,6 +122,7 @@ dependencies {
     //spotify
     implementation("com.spotify.android:auth:1.2.3")
 
+
     //-- Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

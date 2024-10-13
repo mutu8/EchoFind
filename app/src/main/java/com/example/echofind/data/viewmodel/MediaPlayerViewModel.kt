@@ -20,15 +20,27 @@ class MediaPlayerViewModel : ViewModel() {
             prepareAsync()
         }
     }
-
+    // Función para detener la reproducción
     fun stopPlayback() {
-        mediaPlayer?.stop()
+        mediaPlayer?.let {
+            if (it.isPlaying) {
+                it.stop()
+            }
+            it.reset()
+            it.release()
+        }
+        mediaPlayer = null
+    }
+
+    // Función para liberar el MediaPlayer si se destruye la vista
+    fun releaseMediaPlayer() {
+        stopPlayback()
         mediaPlayer?.release()
         mediaPlayer = null
     }
 
     override fun onCleared() {
         super.onCleared()
-        mediaPlayer?.release() // Liberar el MediaPlayer al limpiar el ViewModel
+        releaseMediaPlayer()
     }
 }

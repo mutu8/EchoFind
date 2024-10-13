@@ -234,6 +234,7 @@ class AuthViewModel : ViewModel() {
                             artist = (document.get("artistas") as? List<String>)?.joinToString(", ") ?: "",
                             imageUrl = document.getString("album") ?: "",
                             previewUrl = document.getString("preview_url") ?: "",// Obtener el preview_url
+                            id = document.getString("trackId") ?: "" // Obtener el ID de la canción
                         )
                     }
                     callback(canciones) // Retorna las canciones guardadas

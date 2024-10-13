@@ -2,9 +2,6 @@
 
 package com.example.echofind.ui.screens
 
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -52,10 +49,10 @@ fun ProfileScreen(navController: NavHostController, authViewModel: AuthViewModel
         }
         return
     }
+
     // Obtener una única instancia de UserDataStore para el userId
     val userDataStore = UserDataStore.getInstance(LocalContext.current, userId)
     val userInteractions = userDataStore.userInteractions.collectAsState(initial = emptyMap())
-    val imageUri = rememberSaveable { mutableStateOf("") }
     val username by authViewModel.username.observeAsState(initial = "")
 
     // Solo llama a fetchUsername si el username aún no está definido.
@@ -65,15 +62,10 @@ fun ProfileScreen(navController: NavHostController, authViewModel: AuthViewModel
         }
     }
 
-    val painter = rememberAsyncImagePainter(
-        imageUri.value.ifEmpty { R.drawable.profile_icon }
-    )
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let { imageUri.value = it.toString() }
-    }
+    // Cargar el ícono de perfil por defecto
+    val painter = rememberAsyncImagePainter(R.drawable.profile_icon)
 
+    // Muestra el diálogo de confirmación para cerrar sesión
     val showDialog = rememberSaveable { mutableStateOf(false) }
 
     Scaffold {
@@ -83,6 +75,7 @@ fun ProfileScreen(navController: NavHostController, authViewModel: AuthViewModel
                 .background(Color.Black)
                 .padding(it)
         ) {
+            // Sección de la imagen de perfil
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -108,8 +101,7 @@ fun ProfileScreen(navController: NavHostController, authViewModel: AuthViewModel
                             contentDescription = null,
                             modifier = Modifier
                                 .fillMaxSize()
-                                .background(Color.Black)
-                                .clickable { launcher.launch("image/*") },
+                                .background(Color.Black),
                             contentScale = ContentScale.Crop,
                             alignment = Alignment.Center
                         )
@@ -117,14 +109,14 @@ fun ProfileScreen(navController: NavHostController, authViewModel: AuthViewModel
                 )
                 Text(
                     modifier = Modifier.padding(start = 16.dp),
-                    text = "$username", // Cambia según el nombre del usuario real
+                    text = username, // Cambia según el nombre del usuario real
                     style = TextStyle(fontSize = 28.sp),
                     color = Color.White,
                 )
             }
 
+            // Opciones y estadísticas del perfil
             Spacer(Modifier.height(8.dp))
-
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -145,8 +137,8 @@ fun ProfileScreen(navController: NavHostController, authViewModel: AuthViewModel
                 )
             }
 
+            // Opciones de la aplicación
             Spacer(modifier = Modifier.height(16.dp))
-
             Spacer(modifier = Modifier.height(40.dp))
             OptionCard(
                 leadingIcon = R.drawable.download,

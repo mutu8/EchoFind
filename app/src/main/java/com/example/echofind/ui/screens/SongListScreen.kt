@@ -1,4 +1,5 @@
 import android.media.MediaPlayer
+import android.os.Build
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -8,19 +9,27 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
+import com.example.echofind.R
 import com.example.echofind.data.model.player.Song
 import com.example.echofind.data.viewmodel.AuthViewModel
 import kotlinx.coroutines.delay
+import android.content.Intent
+import android.net.Uri
 
 @Composable
 fun SongListScreen(
@@ -34,8 +43,6 @@ fun SongListScreen(
     var duration by remember { mutableStateOf(0) }
     var isPlaying by remember { mutableStateOf(false) }
     var playingSongTitle by remember { mutableStateOf<String?>(null) }
-
-    // Estado para controlar el diálogo de confirmación de eliminación
     var songToDelete by remember { mutableStateOf<Song?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
@@ -51,7 +58,6 @@ fun SongListScreen(
         }
     }
 
-    // Mantener actualizado el progreso y gestionar la reproducción
     LaunchedEffect(playingSongTitle, isPlaying) {
         if (mediaPlayer != null && isPlaying) {
             duration = mediaPlayer?.duration ?: 0
@@ -59,21 +65,19 @@ fun SongListScreen(
                 currentProgress = mediaPlayer?.currentPosition?.toFloat()?.div(duration) ?: 0f
                 delay(100)
             }
-            // Resetear el estado al terminar la reproducción
             isPlaying = false
             playingSongTitle = null
             currentProgress = 0f
         }
     }
 
-    // Mostrar diálogo de confirmación para eliminar la canción
     if (showDeleteDialog && songToDelete != null) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
             title = { Text(text = "Eliminar canción") },
             text = { Text("¿Estás seguro de que deseas eliminar ${songToDelete?.title}?") },
             confirmButton = {
-                Button(onClick = {
+                IconButton(onClick = {
                     songToDelete?.let {
                         authViewModel.eliminarCancionGuardada(it)
                         songs = songs.filter { song -> song != it }
@@ -88,24 +92,32 @@ fun SongListScreen(
                     showDeleteDialog = false
                     songToDelete = null
                 }) {
-                    Text("Eliminar")
+                    Icon(Icons.Default.Delete, contentDescription = "Eliminar")
                 }
             },
             dismissButton = {
-                Button(onClick = {
+                IconButton(onClick = {
                     showDeleteDialog = false
                     songToDelete = null
                 }) {
-                    Text("Cancelar")
+                    Icon(Icons.Default.Cancel, contentDescription = "Cancelar")
                 }
-            }
+            },
+            modifier = Modifier.fillMaxWidth()
         )
+    }
+
+    val blurModifier = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        Modifier.blur(if (showDeleteDialog) 8.dp else 0.dp)
+    } else {
+        Modifier
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
+            .then(blurModifier)
             .padding(16.dp)
     ) {
         if (songs.isNotEmpty()) {
@@ -115,7 +127,7 @@ fun SongListScreen(
                 items(songs.size) { index ->
                     val song = songs[index]
                     val isCurrentlyPlaying = playingSongTitle == song.title && isPlaying
-                    val cardColor = if (isCurrentlyPlaying) Color.Green else Color.LightGray
+                    val cardColor = if (isCurrentlyPlaying) Color.DarkGray else Color.LightGray
 
                     SongCard(
                         song = song,
@@ -124,9 +136,23 @@ fun SongListScreen(
                         onClick = {
                             onSongClick(song)
 
+                            if (playingSongTitle == song.title && isPlaying) {
+                                mediaPlayer?.release()
+                                mediaPlayer = null
+                                isPlaying = false
+                                playingSongTitle = null
+                                currentProgress = 0f
+                                return@SongCard
+                            }
+
+                            mediaPlayer?.release()
+                            mediaPlayer = null
+                            isPlaying = false
+                            currentProgress = 0f
+                            playingSongTitle = null
+
                             val previewUrl = song.previewUrl
                             if (!previewUrl.isNullOrEmpty()) {
-                                mediaPlayer?.release()
                                 mediaPlayer = MediaPlayer().apply {
                                     setDataSource(previewUrl)
                                     setOnPreparedListener {
@@ -134,6 +160,7 @@ fun SongListScreen(
                                         duration = this.duration
                                         start()
                                         isPlaying = true
+                                        playingSongTitle = song.title
                                     }
                                     setOnCompletionListener {
                                         isPlaying = false
@@ -141,7 +168,6 @@ fun SongListScreen(
                                         currentProgress = 0f
                                     }
                                     prepareAsync()
-                                    playingSongTitle = song.title
                                 }
                             } else {
                                 isPlaying = false
@@ -153,6 +179,13 @@ fun SongListScreen(
                             songToDelete = song
                             showDeleteDialog = true
                         },
+                        onSpotifyClick = {
+                            val intent = Intent(Intent.ACTION_VIEW).apply {
+                                data = Uri.parse("https://open.spotify.com/intl-es/track/${song.id}")
+                                `package` = "com.spotify.music"
+                            }
+                            navController.context.startActivity(intent)
+                        },
                         cardColor = cardColor
                     )
                 }
@@ -160,7 +193,7 @@ fun SongListScreen(
         } else {
             Text(
                 text = "No hay canciones guardadas.",
-                color = Color.White,
+                color = Color.Black,
                 modifier = Modifier.align(Alignment.Center)
             )
         }
@@ -175,6 +208,7 @@ fun SongCard(
     isPlaying: Boolean,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
+    onSpotifyClick: () -> Unit,
     cardColor: Color
 ) {
     val artistName = Regex("""name=([^,}]+)""").find(song.artist)?.groupValues?.get(1) ?: "Artista desconocido"
@@ -182,7 +216,6 @@ fun SongCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick
@@ -204,7 +237,7 @@ fun SongCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Image(
-                        painter = rememberImagePainter(song.imageUrl),
+                        painter = rememberAsyncImagePainter(song.imageUrl),
                         contentDescription = "Song image",
                         modifier = Modifier
                             .size(64.dp)
@@ -212,7 +245,7 @@ fun SongCard(
                         contentScale = ContentScale.Crop
                     )
                     Column(
-                        modifier = Modifier.align(Alignment.CenterVertically)
+                        modifier = Modifier.weight(1f)
                     ) {
                         Text(
                             text = song.title,
@@ -224,6 +257,17 @@ fun SongCard(
                             text = artistName,
                             fontSize = 14.sp,
                             color = Color.Gray
+                        )
+                    }
+
+                    IconButton(
+                        onClick = onSpotifyClick,
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.ico_spotify),
+                            contentDescription = "Spotify",
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }
