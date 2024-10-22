@@ -1,45 +1,58 @@
 package com.example.echofind.data.viewmodel
 
 import android.media.MediaPlayer
+import android.util.Log
 import androidx.lifecycle.ViewModel
 
 class MediaPlayerViewModel : ViewModel() {
-    var mediaPlayer: MediaPlayer? = null
-        private set
+    private var mediaPlayer: MediaPlayer? = null
 
-    fun startPlayback(previewUrl: String, onCompletion: () -> Unit) {
-        mediaPlayer?.release()
-        mediaPlayer = MediaPlayer().apply {
-            setDataSource(previewUrl)
-            setOnPreparedListener {
+    fun startPlayback(url: String, onCompletion: () -> Unit) {
+        Log.d("MediaPlayerViewModel", "startPlayback: Iniciando la reproducción de $url")
+        if (mediaPlayer == null) {
+            mediaPlayer = MediaPlayer().apply {
+                setDataSource(url)
+                prepare()
                 start()
+                setOnCompletionListener {
+                    Log.d("MediaPlayerViewModel", "startPlayback: Reproducción completada")
+                    onCompletion()
+                }
             }
-            setOnCompletionListener {
-                onCompletion()
+        } else {
+            mediaPlayer?.apply {
+                reset()
+                setDataSource(url)
+                prepare()
+                start()
+                Log.d("MediaPlayerViewModel", "startPlayback: MediaPlayer reiniciado y reproduciendo $url")
             }
-            prepareAsync()
         }
-    }
-    // Función para detener la reproducción
-    fun stopPlayback() {
-        mediaPlayer?.let {
-            if (it.isPlaying) {
-                it.stop()
-            }
-            it.reset()
-            it.release()
-        }
-        mediaPlayer = null
     }
 
-    // Función para liberar el MediaPlayer si se destruye la vista
+    fun stopPlayback() {
+        Log.d("MediaPlayerViewModel", "stopPlayback: Deteniendo la reproducción")
+        try {
+            mediaPlayer?.apply {
+                if (isPlaying) {
+                    stop()
+                    reset()
+                }
+            }
+        } catch (e: IllegalStateException) {
+            Log.e("MediaPlayerViewModel", "Error al detener la reproducción: ${e.message}")
+        }
+    }
+
+    // Método para liberar el MediaPlayer
     fun releaseMediaPlayer() {
-        stopPlayback()
+        Log.d("MediaPlayerViewModel", "releaseMediaPlayer: Liberando el MediaPlayer")
         mediaPlayer?.release()
         mediaPlayer = null
     }
 
     override fun onCleared() {
+        Log.d("MediaPlayerViewModel", "onCleared: ViewModel limpiado, liberando el MediaPlayer")
         super.onCleared()
         releaseMediaPlayer()
     }

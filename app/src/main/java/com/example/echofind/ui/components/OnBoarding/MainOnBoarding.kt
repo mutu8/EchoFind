@@ -39,7 +39,7 @@ fun MainOnBoarding(navController: NavController, store: StoreBoarding) {
         PageData(
             R.raw.spotify1,
             tittle = "Conecta con Spotify",
-            desc = "Sincroniza tu cuenta de Spotify y disfruta de una experiencia musical sin interrupciones."
+            desc = "Disfruta de una experiencia musical sin interrupciones."
         )
     )
 

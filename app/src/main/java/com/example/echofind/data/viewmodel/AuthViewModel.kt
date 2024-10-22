@@ -110,7 +110,7 @@ class AuthViewModel : ViewModel() {
                             "email" to email,
                             "username" to user
                         )
-                        FirebaseFirestore.getInstance().collection("users").document(userId)
+                        db .collection("users").document(userId)
                             .set(userMap)
                             .addOnSuccessListener {
                                 _authState.value = AuthState.Authenticated
@@ -271,7 +271,7 @@ class AuthViewModel : ViewModel() {
     }
 
     // Obtener todas las canciones dislikeadas
-    suspend fun obtenerTodasLasCancionesDislikeadas(): List<TrackItem> {
+    private suspend fun obtenerTodasLasCancionesDislikeadas(): List<TrackItem> {
         val currentUser = auth.currentUser ?: return emptyList()
         val userId = currentUser.uid
 
@@ -312,7 +312,7 @@ class AuthViewModel : ViewModel() {
     }
 
     // Obtener todas las canciones seleccionadas (likeadas)
-    suspend fun obtenerTodasLasCancionesSeleccionadas(): List<TrackItem> {
+    private suspend fun obtenerTodasLasCancionesSeleccionadas(): List<TrackItem> {
         val currentUser = auth.currentUser ?: return emptyList()
         val userId = currentUser.uid
 
@@ -352,7 +352,7 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    fun getRecommendationsBasedOnLikes(
+    private fun getRecommendationsBasedOnLikes(
         token: String,
         selectedTracks: List<TrackItem>,
         dislikedTracks: List<TrackItem>,
@@ -361,7 +361,7 @@ class AuthViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 if (token.isNullOrEmpty()) {
-                    Log.e("AuthViewModel", "El token de acceso es nulo o vacío")
+                    //Log.e("AuthViewModel", "El token de acceso es nulo o vacío")
                     callback(emptyList())
                     return@launch
                 }
@@ -404,7 +404,7 @@ class AuthViewModel : ViewModel() {
                 if (likedArtistIds.isNotEmpty()) {
                     for (artist in likedArtists) {
                         val artistId = artist.id
-                        if (artistId.isNullOrBlank()) {
+                        if (artistId.isBlank()) {
                             Log.e("AuthViewModel", "Artist ID is null or blank, skipping.")
                             continue
                         }
@@ -470,7 +470,7 @@ class AuthViewModel : ViewModel() {
                             authorization = "Bearer $token",
                             trackIds = likedTrackIds.take(100).joinToString(",")
                         )
-                        audioFeaturesResponse.audio_features.filterNotNull()
+                        audioFeaturesResponse.audio_features
                     } catch (e: Exception) {
                         Log.e(
                             "AuthViewModel",
@@ -543,7 +543,11 @@ class AuthViewModel : ViewModel() {
                             dislikedTracks.map { it.id } +
                             presentedTrackIds.toList()
 
-                    val filteredRecommendations = tracksWithPreview.filterNot { recommendedTrack ->
+                    var filteredRecommendations = tracksWithPreview.filterNot { recommendedTrack ->
+                        dislikedTrackIds.contains(recommendedTrack.id) && Math.random() > 0.7 // 30% de probabilidades de seguir recomendando
+                    }
+
+                    filteredRecommendations = tracksWithPreview.filterNot { recommendedTrack ->
                         idsCancionesAFiltrar.contains(recommendedTrack.id)
                     }
 
@@ -570,8 +574,6 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-
-
     // Generar y filtrar recomendaciones
     fun generarYFiltrarRecomendaciones(token: String, callback: (List<TrackItem>) -> Unit) {
         viewModelScope.launch {
@@ -584,38 +586,6 @@ class AuthViewModel : ViewModel() {
             ) { recomendacionesFiltradas ->
                 callback(recomendacionesFiltradas)
             }
-        }
-    }
-
-    // Función para obtener las IDs de canciones likeadas y dislikeadas
-    suspend fun obtenerIdsCancionesLikeadasYDislikeadas(): Pair<List<String>, List<String>> {
-        val currentUser = auth.currentUser
-        if (currentUser != null) {
-            val userId = currentUser.uid
-
-            val cancionesLikeadasRef = db.collection("users")
-                .document(userId)
-                .collection("canciones_seleccionadas")
-
-            val cancionesDislikeadasRef = db.collection("users")
-                .document(userId)
-                .collection("canciones_dislikeadas")
-
-            return withContext(Dispatchers.IO) {
-                try {
-                    val cancionesLikeadasDocs = cancionesLikeadasRef.get().await()
-                    val cancionesDislikeadasDocs = cancionesDislikeadasRef.get().await()
-                    val cancionesLikeadas = cancionesLikeadasDocs.documents.map { it.getString("trackId") ?: "" }
-                    val cancionesDislikeadas = cancionesDislikeadasDocs.documents.map { it.getString("trackId") ?: "" }
-                    Pair(cancionesLikeadas, cancionesDislikeadas)
-                } catch (e: Exception) {
-                    Log.e("AuthViewModel", "Error al obtener IDs de canciones: ${e.message}")
-                    Pair(emptyList(), emptyList())
-                }
-            }
-        } else {
-            Log.w("AuthViewModel", "Usuario no autenticado")
-            return Pair(emptyList(), emptyList())
         }
     }
 

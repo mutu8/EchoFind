@@ -1,6 +1,5 @@
-import android.media.MediaPlayer
+package com.example.echofind.ui.screens
 import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -21,7 +20,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
 import com.example.echofind.R
 import com.example.echofind.data.model.dataStore.UserDataStore
 import com.example.echofind.data.model.player.TrackItem
@@ -88,7 +86,7 @@ fun TwyperPreview(
                     if (items.isNotEmpty()) {
                         playTrack()
                     } else {
-                        Log.d("TwyperPreview", "No hay más canciones.")
+                        Log.d("com.example.echofind.ui.screens.TwyperPreview", "No hay más canciones.")
                     }
                 }
             }
@@ -112,7 +110,7 @@ fun TwyperPreview(
                     items.addAll(nuevasRecomendacionesShuffled)
                     authViewModel.agregarCancionesPresentadas(nuevasRecomendacionesShuffled)
                 } else {
-                    Log.d("TwyperPreview", "No hay más recomendaciones.")
+                    Log.d("com.example.echofind.ui.screens.TwyperPreview", "No hay más recomendaciones.")
                 }
             }
         }
@@ -146,10 +144,13 @@ fun TwyperPreview(
         }
     }
 
-    // Limpiar MediaPlayer al destruir el Composable
+    // Asegúrate de detener y liberar el MediaPlayer cuando el Composable se destruye
     DisposableEffect(Unit) {
         onDispose {
-            mediaPlayerViewModel.stopPlayback() // Usar el ViewModel para liberar el MediaPlayer
+            // Aquí se asegura que el MediaPlayer se detenga y se liberen sus recursos
+            mediaPlayerViewModel.stopPlayback()
+            mediaPlayerViewModel.releaseMediaPlayer()
+            Log.d("com.example.echofind.ui.screens.TwyperPreview", "MediaPlayer detenido y recursos liberados.")
         }
     }
 
@@ -168,7 +169,7 @@ fun TwyperPreview(
                         }
                     }
                 } else {
-                    Log.e("TwyperPreview", "Error: No se pudo obtener el token.")
+                    Log.e("com.example.echofind.ui.screens.TwyperPreview", "Error: No se pudo obtener el token.")
                 }
             }
         } else {
@@ -225,7 +226,7 @@ fun TwyperPreview(
                     if (items.isNotEmpty()) {
                         playTrack()
                     } else {
-                        Log.d("TwyperPreview", "Se han terminado las canciones.")
+                        Log.d("com.example.echofind.ui.screens.TwyperPreview", "Se han terminado las canciones.")
                     }
                 }
             ) { track ->

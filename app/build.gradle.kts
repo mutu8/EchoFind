@@ -56,6 +56,11 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.google.firebase.auth.ktx)
     implementation(libs.play.services.auth)
+    implementation(libs.play.services.base)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.auth.ktx)
+    implementation(libs.firebase.firestore.ktx)
+    implementation(libs.firebase.storage.ktx)
 
     // OnBoarding
     implementation(libs.accompanist.pager)
@@ -71,56 +76,52 @@ dependencies {
 
     // Graphics.paint
     implementation(libs.androidx.core.ktx.v190)
-    implementation(libs.firebase.auth.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.transport.runtime)
 
     //twyper
     implementation("com.github.theapache64:twyper:0.0.4")
-    implementation("androidx.compose.runtime:runtime-saveable:1.0.0")
-    implementation("androidx.compose.ui:ui-graphics:1.0.0")
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.firestore.ktx)
-    implementation("com.google.firebase:firebase-storage-ktx:20.1.0")
+    implementation(libs.androidx.runtime.saveable.v100)
+    implementation(libs.ui.graphics)
     implementation(libs.androidx.runtime.livedata)
 
     // Retrofit y Gson
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
 
     // OkHttp Logging
-    implementation("com.squareup.okhttp3:logging-interceptor:4.9.1")
+    implementation(libs.logging.interceptor)
 
     // Coil (opcional, para cargar imágenes)
-    implementation("io.coil-kt:coil-compose:2.3.0")
+    implementation(libs.coil.compose)
 
     // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
+    implementation(libs.kotlinx.coroutines.android)
 
     // Lifecycle Compose
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+    implementation(libs.androidx.lifecycle.runtime.ktx.v261)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 
     // MediaPlayer
-    implementation("com.google.android.exoplayer:exoplayer:2.18.1")
+    implementation(libs.exoplayer)
 
     //Font
-    implementation("androidx.compose.ui:ui-text:1.0.5")
+    implementation(libs.androidx.ui.text)
 
     //Material3 icons
-    implementation("androidx.compose.material:material-icons-extended:1.5.4")
-    implementation("androidx.compose.material:material:1.0.0")
+    implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.material)
 
     //room
-    implementation("androidx.room:room-runtime:2.5.0")
-    kapt("androidx.room:room-compiler:2.5.0")
-    implementation("androidx.room:room-ktx:2.5.0")
+    implementation(libs.androidx.room.runtime)
+    kapt(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
 
     //Lectura de json
-    implementation("com.google.code.gson:gson:2.8.6")
+    implementation(libs.gson)
 
     //spotify
-    implementation("com.spotify.android:auth:1.2.3")
+    implementation(libs.auth)
 
 
     //-- Testing

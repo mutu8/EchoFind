@@ -54,10 +54,3 @@ fun BottomNavigationBar(navController: NavController) {
         }
     }
 }
-
-
-@Preview(showBackground = true)
-@Composable
-fun BottomNavigationBarPreview() {
-    //BottomNavigationBar()
-}

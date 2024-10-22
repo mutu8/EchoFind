@@ -111,49 +111,4 @@ class LoginSpotifyViewModel(
         }
     }
 
-    fun obtenerRecomendacionesConCache(token: String, callback: (List<TrackItem>) -> Unit) {
-        val currentTime = System.currentTimeMillis()
-        val cacheDuration = 10 * 60 * 1000 // 10 minutos en milisegundos
-
-        if (recomendacionesCache != null && (currentTime - cacheTimestamp) < cacheDuration) {
-
-            // Usar caché si es válida
-            callback(recomendacionesCache!!)
-        } else {
-            // Obtener nuevas recomendaciones usando el método actualizado
-            authViewModel.generarYFiltrarRecomendaciones(token) { nuevasRecomendaciones ->
-                if (nuevasRecomendaciones.isNotEmpty()) {
-                    recomendacionesCache = nuevasRecomendaciones
-                    cacheTimestamp = currentTime
-                    callback(nuevasRecomendaciones)
-                } else {
-                    callback(emptyList())
-                }
-            }
-        }
-    }
-
-    // Función para reproducir la vista previa de una pista y cambiar automáticamente al terminar
-    fun playPreviewTrack(previewUrl: String, onCompletion: () -> Unit): MediaPlayer? {
-        return try {
-            val mediaPlayer = MediaPlayer().apply {
-                setDataSource(previewUrl) // Configura la URL de la vista previa
-                prepare() // Prepara el reproductor de audio
-                start() // Reproduce la pista de vista previa
-            }
-
-            mediaPlayer.setOnCompletionListener {
-                mediaPlayer.release() // Libera el reproductor cuando termine la reproducción
-                onCompletion() // Ejecutar la acción de reproducción automática al finalizar
-            }
-
-            mediaPlayer // Devolver el MediaPlayer para poder controlarlo más adelante
-
-        } catch (e: Exception) {
-            Log.e("MediaPlayerError", "Error al reproducir la vista previa: ${e.message}")
-            null // Retorna null si ocurre algún error
-        }
-    }
-
-
     }

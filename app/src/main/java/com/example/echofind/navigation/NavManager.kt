@@ -1,7 +1,7 @@
 package com.example.echofind.navigation
 
 import SongListScreen
-import TwyperPreview
+import com.example.echofind.ui.screens.TwyperPreview
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -43,7 +43,7 @@ fun NavManager() {
         factory = LoginSpotifyViewModelFactory(loginAppViewModel)
     )
 
-    // Verificar si la ruta actual es TwyperPreview para mostrar la barra de navegación
+    // Verificar si la ruta actual es com.example.echofind.ui.screens.TwyperPreview para mostrar la barra de navegación
     val navBackStackEntry = navController.currentBackStackEntryAsState().value
     val currentRoute = navBackStackEntry?.destination?.route
 

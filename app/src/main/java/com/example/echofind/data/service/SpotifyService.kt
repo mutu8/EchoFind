@@ -27,7 +27,7 @@ interface SpotifyService {
         @Query("target_danceability") targetDanceability: Double? = null,
         @Query("target_energy") targetEnergy: Double? = null,
         @Query("target_valence") targetValence: Double? = null,
-        @Query("limit") limit: Int = 50
+        @Query("limit") limit: Int = 20
     ): RecommendationsResponse
 
     @GET("v1/audio-features")

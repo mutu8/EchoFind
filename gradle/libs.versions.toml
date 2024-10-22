@@ -2,23 +2,40 @@
 accompanistPager = "0.24.13-rc"
 agp = "8.6.0"
 appcompat = "1.5.1"
+auth = "1.2.3"
+coilCompose = "2.3.0"
+converterGson = "2.9.0"
 coreKtxVersion = "1.9.0"
 datastorePreferences = "1.0.0"
+exoplayer = "2.19.1"
 firebaseAuthKtx = "21.1.0"
 firebaseBom = "33.2.0"
+firebaseStorageKtx = "21.0.1"
+gson = "2.8.6"
 kotlin = "1.9.0"
 coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
+kotlinxCoroutinesAndroid = "1.7.3"
 lifecycleRuntimeKtx = "2.8.5"
 activityCompose = "1.9.2"
 composeBom = "2024.04.01"
+lifecycleRuntimeKtxVersion = "2.6.1"
+lifecycleViewmodelCompose = "2.6.1"
+loggingInterceptor = "4.9.1"
 lottieCompose = "5.2.0"
+material = "1.0.0"
+materialIconsExtended = "1.5.4"
 mssqlJdbc = "10.2.0.jre8"
 navigationCompose = "2.8.0"
 playServicesAuth = "21.2.0"
+playServicesBase = "18.2.0"
+retrofit = "2.9.0"
+roomRuntime = "2.5.0"
+roomCompiler = "2.5.0"
 runtimeSaveable = "1.7.0"
+runtimeSaveableVersion = "1.0.0"
 transportRuntime = "3.0.1"
 twyper = "0.0.4"
 uiGraphics = "1.0.0"
@@ -27,6 +44,7 @@ firebaseAuth = "23.0.0"
 firebaseFirestoreKtx = "25.1.0"
 runtimeLivedata = "1.7.1"
 media3Exoplayer = "1.4.1"
+uiText = "1.0.5"
 
 [libraries]
 accompanist-pager = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanistPager" }
@@ -34,11 +52,26 @@ androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "a
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-ktx-v190 = { module = "androidx.core:core-ktx", version.ref = "coreKtxVersion" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
+androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
+androidx-lifecycle-runtime-ktx-v261 = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtxVersion" }
+androidx-material = { module = "androidx.compose.material:material", version.ref = "material" }
+androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCompiler" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 androidx-runtime-saveable = { module = "androidx.compose.runtime:runtime-saveable", version.ref = "runtimeSaveable" }
+androidx-runtime-saveable-v100 = { module = "androidx.compose.runtime:runtime-saveable", version.ref = "runtimeSaveableVersion" }
+androidx-ui-text = { module = "androidx.compose.ui:ui-text", version.ref = "uiText" }
+auth = { module = "com.spotify.android:auth", version.ref = "auth" }
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
+converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
+exoplayer = { module = "com.google.android.exoplayer:exoplayer", version.ref = "exoplayer" }
 firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-storage-ktx = { module = "com.google.firebase:firebase-storage-ktx", version.ref = "firebaseStorageKtx" }
 google-firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -52,9 +85,13 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
+logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "loggingInterceptor" }
 lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "lottieCompose" }
 mssql-jdbc = { module = "com.microsoft.sqlserver:mssql-jdbc", version.ref = "mssqlJdbc" }
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
+play-services-base = { module = "com.google.android.gms:play-services-base", version.ref = "playServicesBase" }
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 transport-runtime = { module = "com.google.android.datatransport:transport-runtime", version.ref = "transportRuntime" }
 twyper = { module = "com.github.theapache64:twyper", version.ref = "twyper" }
 ui-graphics = { module = "androidx.compose.ui:ui-graphics", version.ref = "uiGraphics" }

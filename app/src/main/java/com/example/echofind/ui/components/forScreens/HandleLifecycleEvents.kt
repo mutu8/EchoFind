@@ -16,10 +16,6 @@ fun HandleLifecycleEvents(mediaPlayerViewModel: MediaPlayerViewModel) {
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                Lifecycle.Event.ON_PAUSE -> {
-                    // Detener el MediaPlayer al minimizar la app
-                    mediaPlayerViewModel.stopPlayback()
-                }
                 Lifecycle.Event.ON_STOP -> {
                     // O puedes detenerlo en ON_STOP según tus necesidades
                     mediaPlayerViewModel.stopPlayback()
